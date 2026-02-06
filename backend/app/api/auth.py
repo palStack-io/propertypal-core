@@ -2,12 +2,11 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import User
+from app.models.settings import Settings
 from app import db
 from app.services.email_service import send_password_reset_email,send_welcome_email,send_verification_email
 import secrets
 from datetime import datetime, timedelta
-from app.models.pending_invitation import PendingInvitation
-from app.models.Property_user import PropertyUser
 
 # Create blueprint
 auth_bp = Blueprint('auth', __name__)
@@ -15,79 +14,67 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    """Register a new user"""
+    """Register a new user - PropertyPal Core (Single User)
+
+    PropertyPal Core is a single-user application.
+    Only the first user (property owner) can register.
+    """
     data = request.get_json()
-    
+
     # Check if required fields are provided
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({"error": "Email and password are required"}), 400
-    
-    # Check if user already exists
-    if User.query.filter_by(email=data.get('email')).first():
-        return jsonify({"error": "User already exists"}), 409
-    
-    # Create new user
+
+    # Check if email already exists
+    existing_user = User.query.filter_by(email=data.get('email')).first()
+    if existing_user:
+        return jsonify({"error": "Email already registered"}), 409
+
+    # Check user count - only allow first user registration
+    existing_user_count = User.query.count()
+    if existing_user_count > 0:
+        return jsonify({
+            "error": "PropertyPal Core is a single-user application. Registration is closed.",
+            "single_user_mode": True
+        }), 403
+
+    # First user registration - property owner
     new_user = User(
         email=data.get('email'),
-        first_name=data.get('first_name', ''),
-        last_name=data.get('last_name', ''),
+        first_name=data.get('first_name', 'Admin'),
+        last_name=data.get('last_name', 'User'),
         phone=data.get('phone', ''),
-        email_verified=False  # Default to unverified
+        role='admin',
+        is_admin=True,
+        email_verified=True  # Auto-verify first user
     )
-    new_user.password = data.get('password')  # This will use the password setter method to hash
-    
-    # Generate verification token
-    verification_token = secrets.token_urlsafe(32)
-    new_user.verification_token = verification_token
-    new_user.verification_token_expiry = datetime.utcnow() + timedelta(hours=24)
-    
-    # Save user to database
+    new_user.password = data.get('password')
+
     db.session.add(new_user)
     db.session.commit()
-    
-    # Check for pending invitations for this email
-    invitation_token = data.get('invitation_token')
-    
-    if invitation_token:
-        # Look for specific invitation if token provided
-        pending_invitation = PendingInvitation.query.filter_by(
-            invitation_token=invitation_token,
-            email=data.get('email')
-        ).filter(PendingInvitation.expires_at > datetime.utcnow()).first()
-    else:
-        # Otherwise check for any invitations for this email
-        pending_invitation = PendingInvitation.query.filter_by(
-            email=data.get('email')
-        ).filter(PendingInvitation.expires_at > datetime.utcnow()).first()
-    
-    if pending_invitation:
-        # Create property association
-        property_user = PropertyUser(
-            property_id=pending_invitation.property_id,
-            user_id=new_user.id,
-            role=pending_invitation.role,
-            status='active',  # Automatically activate it
-            invited_by=pending_invitation.invited_by,
-            accepted_at=datetime.utcnow()
-        )
-        
-        db.session.add(property_user)
-        
-        # Delete the pending invitation
-        db.session.delete(pending_invitation)
-        db.session.commit()
-    
-    # Generate verification URL
-    frontend_url = current_app.config.get('FRONTEND_URL', 'http://localhost:3000')
-    verification_url = f"{frontend_url}/verify-email?token={verification_token}"
-    
-    # Send verification email instead of welcome email initially
-    send_verification_email(new_user, verification_url)
-    
+
+    # Create default settings
+    settings = Settings(
+        user_id=new_user.id,
+        currency='USD',
+        date_format='MM/DD/YYYY',
+        notifications_enabled=True,
+        email_notifications=False
+    )
+    db.session.add(settings)
+    db.session.commit()
+
+    # Auto-login first user by providing tokens
+    access_token = create_access_token(identity=str(new_user.id))
+    refresh_token = create_refresh_token(identity=str(new_user.id))
+
     return jsonify({
-        "message": "User registered successfully. Please check your email to verify your account.",
+        "message": "Account created successfully. Please create your property.",
         "user_id": new_user.id,
-        "invitation_processed": pending_invitation is not None
+        "is_first_user": True,
+        "requires_property_setup": True,
+        "access_token": access_token,
+        "refresh_token": refresh_token
     }), 201
 
 @auth_bp.route('/login', methods=['POST'])
@@ -253,6 +240,19 @@ def verify_email():
     
     return jsonify({
         "message": "Email verified successfully. You can now log in to your account."
+    }), 200
+
+@auth_bp.route('/demo-status', methods=['GET'])
+def demo_status():
+    """Check if demo mode is enabled"""
+    is_demo = current_app.config.get('DEMO_MODE', False)
+    return jsonify({
+        "demo_mode": is_demo,
+        "demo_accounts": [
+            {"email": "demo@propertypal.com", "name": "Demo User"},
+            {"email": "demo2@propertypal.com", "name": "Jane Smith"},
+            {"email": "demo3@propertypal.com", "name": "Mike Johnson"}
+        ] if is_demo else []
     }), 200
 
 @auth_bp.route('/resend-verification', methods=['POST'])

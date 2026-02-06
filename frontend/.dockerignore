@@ -8,6 +8,14 @@
 docker-compose*.yml
 Dockerfile*
 
+# Documentation - exclude from Docker image
+*.md
+!README.md
+
+# Shell scripts - exclude from Docker image
+*.sh
+!docker-entrypoint.sh
+
 # Python
 __pycache__/
 *.py[cod]

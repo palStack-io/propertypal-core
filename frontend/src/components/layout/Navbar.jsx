@@ -24,14 +24,14 @@ const Navbar = ({ toggleSidebar, user }) => {
             </svg>
           </button>
           {/* Use logo from public directory */}
-          <Link to="/homie-dashboard" className="flex items-center">
+          <Link to="/dashboard" className="flex items-center">
             <img
-              src="/logo192.png"
-              alt="PropertyPal Logo"
-              className="h-8 w-auto mr-2"
+              src="/propertyPal.png"
+              alt="propertyPal Logo"
+              className="h-8 w-8 mr-2"
             />
             <span className="text-xl font-bold">
-              <span className="property-text">Property</span>Pal
+              <span className="property-text">property</span><span className="text-white">Pal</span>
             </span>
           </Link>
         </div>

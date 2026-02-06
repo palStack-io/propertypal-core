@@ -56,15 +56,29 @@ const SignupForm = () => {
       });
       
       setRegistrationSuccess(true);
-      
-      // Navigate to login page after a delay (this uses the navigate function)
-      setTimeout(() => {
-        navigate('/login', { 
-          state: { 
-            message: 'Registration successful! Please verify your email before logging in.' 
-          } 
-        });
-      }, 5000);
+
+      // Check if this is the first user (requires property setup)
+      if (response.is_first_user && response.requires_property_setup) {
+        // Store the tokens if they were returned (auto-login)
+        if (response.access_token) {
+          localStorage.setItem('accessToken', response.access_token);
+          localStorage.setItem('refreshToken', response.refresh_token);
+        }
+
+        // Redirect to property setup wizard immediately
+        setTimeout(() => {
+          navigate('/setup-property');
+        }, 2000);
+      } else {
+        // Navigate to login page after a delay
+        setTimeout(() => {
+          navigate('/login', {
+            state: {
+              message: 'Registration successful! Please verify your email before logging in.'
+            }
+          });
+        }, 5000);
+      }
     } catch (err) {
       setLoading(false);
       console.error('Registration error:', err);
@@ -142,9 +156,13 @@ const SignupForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="card w-full max-w-md p-8">
-        <div className="flex justify-center mb-6">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/propertyPal.png" alt="propertyPal" className="h-16 w-16 mb-3" />
           <div className="text-3xl font-bold">
-            <span className="property-text">Property</span>Pal
+            <span className="property-text">property</span><span className="text-white">Pal</span>
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            Part of the <a href="https://palstack.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">palStack</a> ecosystem
           </div>
         </div>
         

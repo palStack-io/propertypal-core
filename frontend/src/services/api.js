@@ -25,8 +25,9 @@ export const API_BASE_URL = rawBaseUrl.endsWith('/api')
   ? rawBaseUrl.slice(0, -4)
   : rawBaseUrl;
 
-// Use the runtime API URL or fallback to relative path
-const BASE_URL = rawBaseUrl || '/';
+// Use the runtime API URL or fallback to empty (root)
+// Note: formatApiUrl will add /api prefix, so baseURL should NOT include /api
+const BASE_URL = rawBaseUrl === '/api' ? '' : (rawBaseUrl || '');
 
 console.log('API Base URL:', BASE_URL);
 

@@ -38,21 +38,25 @@ DB_TABLES=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d 
 
 echo "Found $DB_TABLES tables in database"
 
-# Initialize migrations folder if it doesn't exist
-if [ ! -d "migrations" ]; then
-    echo "Creating migrations folder..."
-    flask db init
-fi
-
-# Always try to run migrations
-echo "Running database migrations..."
+# For fresh databases, create tables directly from models
 if [ $DB_TABLES -lt 5 ]; then
-    echo "Database appears to be empty. Creating initial migration..."
-    flask db migrate -m "Initial migration" || true
+    echo "Database appears to be empty. Creating tables from models..."
+    python -c "
+from app import create_app, db
+app = create_app()
+with app.app_context():
+    db.create_all()
+    print('Tables created successfully!')
+"
+    echo "Database initialized!"
+else
+    echo "Database already has tables, checking migrations..."
+    # Only run migrations if migrations folder exists and has versions
+    if [ -d "migrations/versions" ] && [ "$(ls -A migrations/versions 2>/dev/null)" ]; then
+        echo "Applying any pending migrations..."
+        flask db upgrade || echo "Migration failed, but continuing..."
+    fi
 fi
-
-echo "Applying migrations..."
-flask db upgrade
 
 # Start application based on environment
 if [ "$FLASK_ENV" = "production" ]; then

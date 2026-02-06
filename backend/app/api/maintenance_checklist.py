@@ -1,4 +1,4 @@
-
+# api/maintenance_checklist.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
@@ -6,7 +6,6 @@ from app.models.maintenance_checklist import MaintenanceChecklistItem
 from app.models.user import User
 from app.models.property import Property
 from datetime import datetime
-from app.models.Property_user import PropertyUser
 
 # Create blueprint for checklist routes
 checklist_bp = Blueprint('maintenance_checklist', __name__, url_prefix='/api/maintenance/checklist')
@@ -17,54 +16,38 @@ def get_seasonal_checklist(season):
     """Get seasonal maintenance checklist for the current user"""
     current_user_id = int(get_jwt_identity())
     property_id = request.args.get('property_id')
-    
+
     # Validate the season parameter
     valid_seasons = ['Spring', 'Summer', 'Fall', 'Winter']
     if season not in valid_seasons:
         return jsonify({"error": "Invalid season. Must be one of: Spring, Summer, Fall, Winter"}), 400
-    
-    # If property_id is provided, check access first
+
+    # If property_id is provided, verify ownership
     if property_id:
-        # Verify user has owner or manager access to this property
-        property_user = PropertyUser.query.filter_by(
-            property_id=property_id,
-            user_id=current_user_id,
-            status='active'
-        ).first()
-        
-        if not property_user or property_user.role not in ['owner', 'manager']:
-            return jsonify({"error": "Property not found or you don't have permission to view checklists"}), 403
-        
+        property = Property.query.filter_by(id=property_id, user_id=current_user_id).first()
+        if not property:
+            return jsonify({"error": "Property not found"}), 404
+
         # Build the query for this property
         query = MaintenanceChecklistItem.query.filter_by(
             property_id=property_id,
             season=season
         )
     else:
-        # Get all properties the user has owner or manager access to
-        property_users = PropertyUser.query.filter(
-            PropertyUser.user_id == current_user_id,
-            PropertyUser.status == 'active',
-            PropertyUser.role.in_(['owner', 'manager'])
-        ).all()
-        
-        property_ids = [pu.property_id for pu in property_users]
-        
-        # Get checklist items created by the user OR for properties they have owner/manager access to
-        query = MaintenanceChecklistItem.query.filter(
-            (MaintenanceChecklistItem.user_id == current_user_id) | 
-            (MaintenanceChecklistItem.property_id.in_(property_ids)),
-            MaintenanceChecklistItem.season == season
+        # Get checklist items for the user
+        query = MaintenanceChecklistItem.query.filter_by(
+            user_id=current_user_id,
+            season=season
         )
-    
+
     # Execute the query
-    checklist_items = query.order_by(MaintenanceChecklistItem.is_completed, 
+    checklist_items = query.order_by(MaintenanceChecklistItem.is_completed,
                                     MaintenanceChecklistItem.task).all()
-    
+
     # If no items exist for this property, create default items
     if not checklist_items and property_id:
         checklist_items = create_default_checklist_items(current_user_id, property_id, season)
-    
+
     result = []
     for item in checklist_items:
         result.append({
@@ -78,9 +61,9 @@ def get_seasonal_checklist(season):
             'property_id': item.property_id,
             'created_at': item.created_at.isoformat(),
             'updated_at': item.updated_at.isoformat(),
-            'created_by': item.user_id  # Include who created the item
+            'created_by': item.user_id
         })
-    
+
     return jsonify(result)
 
 @checklist_bp.route('/', methods=['GET'])
@@ -89,47 +72,29 @@ def get_all_checklists():
     """Get all checklist items for the current user, optionally filtered by property"""
     current_user_id = int(get_jwt_identity())
     property_id = request.args.get('property_id')
-    
-    # If property_id is provided, check access first
+
+    # If property_id is provided, verify ownership
     if property_id:
-        # Verify user has owner or manager access to this property
-        property_user = PropertyUser.query.filter_by(
-            property_id=property_id,
-            user_id=current_user_id,
-            status='active'
-        ).first()
-        
-        if not property_user or property_user.role not in ['owner', 'manager']:
-            return jsonify({"error": "Property not found or you don't have permission to view checklists"}), 403
-        
+        property = Property.query.filter_by(id=property_id, user_id=current_user_id).first()
+        if not property:
+            return jsonify({"error": "Property not found"}), 404
+
         # Build the query for this property
         query = MaintenanceChecklistItem.query.filter_by(property_id=property_id)
     else:
-        # Get all properties the user has owner or manager access to
-        property_users = PropertyUser.query.filter(
-            PropertyUser.user_id == current_user_id,
-            PropertyUser.status == 'active',
-            PropertyUser.role.in_(['owner', 'manager'])
-        ).all()
-        
-        property_ids = [pu.property_id for pu in property_users]
-        
-        # Get checklist items created by the user OR for properties they have owner/manager access to
-        query = MaintenanceChecklistItem.query.filter(
-            (MaintenanceChecklistItem.user_id == current_user_id) | 
-            (MaintenanceChecklistItem.property_id.in_(property_ids))
-        )
-    
+        # Get checklist items for the user
+        query = MaintenanceChecklistItem.query.filter_by(user_id=current_user_id)
+
     # Execute the query
-    items = query.order_by(MaintenanceChecklistItem.season, 
-                          MaintenanceChecklistItem.is_completed, 
+    items = query.order_by(MaintenanceChecklistItem.season,
+                          MaintenanceChecklistItem.is_completed,
                           MaintenanceChecklistItem.task).all()
-    
+
     # Group items by season
     result = {}
     for season in ['Spring', 'Summer', 'Fall', 'Winter']:
         result[season] = []
-    
+
     for item in items:
         result[item.season].append({
             'id': item.id,
@@ -142,9 +107,9 @@ def get_all_checklists():
             'property_id': item.property_id,
             'created_at': item.created_at.isoformat(),
             'updated_at': item.updated_at.isoformat(),
-            'created_by': item.user_id  # Include who created the item
+            'created_by': item.user_id
         })
-    
+
     # Check if any seasons have no items for a specific property, create defaults for them
     if property_id:
         property_id_int = int(property_id)
@@ -163,9 +128,9 @@ def get_all_checklists():
                         'property_id': item.property_id,
                         'created_at': item.created_at.isoformat(),
                         'updated_at': item.updated_at.isoformat(),
-                        'created_by': item.user_id  # Include who created the item
+                        'created_by': item.user_id
                     })
-    
+
     return jsonify(result)
 
 @checklist_bp.route('/', methods=['POST'])
@@ -174,16 +139,16 @@ def create_checklist_item():
     """Create a new custom checklist item"""
     current_user_id = int(get_jwt_identity())
     data = request.get_json()
-    
+
     # Validate required fields
     if not data or not data.get('task') or not data.get('season'):
         return jsonify({"error": "Task and season are required"}), 400
-    
+
     # Validate season
     valid_seasons = ['Spring', 'Summer', 'Fall', 'Winter']
     if data.get('season') not in valid_seasons:
         return jsonify({"error": "Invalid season. Must be one of: Spring, Summer, Fall, Winter"}), 400
-    
+
     # Create new checklist item
     new_item = MaintenanceChecklistItem(
         user_id=current_user_id,
@@ -192,16 +157,16 @@ def create_checklist_item():
         description=data.get('description', ''),
         season=data.get('season'),
         is_completed=data.get('is_completed', False),
-        is_default=False  # User-created items are not defaults
+        is_default=False
     )
-    
+
     # Set completed_at timestamp if item is already completed
     if new_item.is_completed:
         new_item.completed_at = datetime.utcnow()
-    
+
     db.session.add(new_item)
     db.session.commit()
-    
+
     return jsonify({
         'id': new_item.id,
         'task': new_item.task,
@@ -221,15 +186,15 @@ def create_checklist_item():
 def get_checklist_item(item_id):
     """Get a specific checklist item"""
     current_user_id = int(get_jwt_identity())
-    
+
     item = MaintenanceChecklistItem.query.filter_by(
-        id=item_id, 
+        id=item_id,
         user_id=current_user_id
     ).first()
-    
+
     if not item:
         return jsonify({"error": "Checklist item not found or access denied"}), 404
-    
+
     result = {
         'id': item.id,
         'task': item.task,
@@ -242,7 +207,7 @@ def get_checklist_item(item_id):
         'created_at': item.created_at.isoformat(),
         'updated_at': item.updated_at.isoformat()
     }
-    
+
     return jsonify(result)
 
 @checklist_bp.route('/<int:item_id>', methods=['PUT'])
@@ -250,49 +215,49 @@ def get_checklist_item(item_id):
 def update_checklist_item(item_id):
     """Update an existing checklist item"""
     current_user_id = int(get_jwt_identity())
-    
+
     item = MaintenanceChecklistItem.query.filter_by(
-        id=item_id, 
+        id=item_id,
         user_id=current_user_id
     ).first()
-    
+
     if not item:
         return jsonify({"error": "Checklist item not found or access denied"}), 404
-    
+
     data = request.get_json()
-    
+
     # Update fields if provided
     if 'task' in data:
         item.task = data['task']
-    
+
     if 'description' in data:
         item.description = data['description']
-    
+
     if 'season' in data:
         # Validate season
         valid_seasons = ['Spring', 'Summer', 'Fall', 'Winter']
         if data['season'] not in valid_seasons:
             return jsonify({"error": "Invalid season. Must be one of: Spring, Summer, Fall, Winter"}), 400
         item.season = data['season']
-    
+
     if 'is_completed' in data:
         # Update completion status and timestamp
         if data['is_completed'] and not item.is_completed:
             item.completed_at = datetime.utcnow()
         elif not data['is_completed'] and item.is_completed:
             item.completed_at = None
-        
+
         item.is_completed = data['is_completed']
-    
+
     if 'property_id' in data:
         item.property_id = data['property_id']
-    
+
     # If a default item is edited, it's no longer a default
     if item.is_default and ('task' in data or 'description' in data or 'season' in data):
         item.is_default = False
-    
+
     db.session.commit()
-    
+
     return jsonify({
         'id': item.id,
         'task': item.task,
@@ -312,26 +277,26 @@ def update_checklist_item(item_id):
 def toggle_checklist_item(item_id):
     """Toggle completion status of a checklist item"""
     current_user_id = int(get_jwt_identity())
-    
+
     item = MaintenanceChecklistItem.query.filter_by(
-        id=item_id, 
+        id=item_id,
         user_id=current_user_id
     ).first()
-    
+
     if not item:
         return jsonify({"error": "Checklist item not found or access denied"}), 404
-    
+
     # Toggle completion status
     item.is_completed = not item.is_completed
-    
+
     # Update completed_at timestamp
     if item.is_completed:
         item.completed_at = datetime.utcnow()
     else:
         item.completed_at = None
-    
+
     db.session.commit()
-    
+
     return jsonify({
         'id': item.id,
         'task': item.task,
@@ -345,18 +310,18 @@ def toggle_checklist_item(item_id):
 def delete_checklist_item(item_id):
     """Delete a checklist item"""
     current_user_id = int(get_jwt_identity())
-    
+
     item = MaintenanceChecklistItem.query.filter_by(
-        id=item_id, 
+        id=item_id,
         user_id=current_user_id
     ).first()
-    
+
     if not item:
         return jsonify({"error": "Checklist item not found or access denied"}), 404
-    
+
     db.session.delete(item)
     db.session.commit()
-    
+
     return jsonify({
         'message': 'Checklist item deleted successfully'
     })
@@ -367,28 +332,28 @@ def reset_seasonal_checklist(season):
     """Reset a seasonal checklist to default items"""
     current_user_id = int(get_jwt_identity())
     property_id = request.args.get('property_id')
-    
+
     # Validate the season parameter
     valid_seasons = ['Spring', 'Summer', 'Fall', 'Winter']
     if season not in valid_seasons:
         return jsonify({"error": "Invalid season. Must be one of: Spring, Summer, Fall, Winter"}), 400
-    
+
     # Delete existing checklist items for this season and property
     query = MaintenanceChecklistItem.query.filter_by(
         user_id=current_user_id,
         season=season
     )
-    
+
     if property_id:
         query = query.filter_by(property_id=property_id)
-    
+
     query.delete()
     db.session.commit()
-    
+
     # Create new default items
     property_id_int = int(property_id) if property_id else None
     checklist_items = create_default_checklist_items(current_user_id, property_id_int, season)
-    
+
     result = []
     for item in checklist_items:
         result.append({
@@ -403,7 +368,7 @@ def reset_seasonal_checklist(season):
             'created_at': item.created_at.isoformat(),
             'updated_at': item.updated_at.isoformat()
         })
-    
+
     return jsonify({
         'message': f'Checklist for {season} has been reset to defaults',
         'items': result
@@ -415,47 +380,47 @@ def batch_update_checklist():
     """Update multiple checklist items at once"""
     current_user_id = int(get_jwt_identity())
     data = request.get_json()
-    
+
     if not data or not isinstance(data.get('items'), list):
         return jsonify({"error": "Request must include an 'items' array"}), 400
-    
+
     updated_items = []
     errors = []
-    
+
     for item_data in data['items']:
         if not item_data.get('id'):
             errors.append({"error": "Each item must have an id", "item": item_data})
             continue
-        
+
         item = MaintenanceChecklistItem.query.filter_by(
-            id=item_data['id'], 
+            id=item_data['id'],
             user_id=current_user_id
         ).first()
-        
+
         if not item:
             errors.append({"error": "Item not found or access denied", "item_id": item_data['id']})
             continue
-        
+
         # Update fields if provided
         if 'task' in item_data:
             item.task = item_data['task']
             if item.is_default:
                 item.is_default = False
-        
+
         if 'description' in item_data:
             item.description = item_data['description']
             if item.is_default:
                 item.is_default = False
-        
+
         if 'is_completed' in item_data:
             # Update completion status and timestamp
             if item_data['is_completed'] and not item.is_completed:
                 item.completed_at = datetime.utcnow()
             elif not item_data['is_completed'] and item.is_completed:
                 item.completed_at = None
-            
+
             item.is_completed = item_data['is_completed']
-        
+
         updated_items.append({
             'id': item.id,
             'task': item.task,
@@ -465,9 +430,9 @@ def batch_update_checklist():
             'completed_at': item.completed_at.isoformat() if item.completed_at else None,
             'is_default': item.is_default
         })
-    
+
     db.session.commit()
-    
+
     return jsonify({
         'updated_items': updated_items,
         'errors': errors,
@@ -480,46 +445,46 @@ def get_checklist_stats():
     """Get statistics about checklist completion by season"""
     current_user_id = int(get_jwt_identity())
     property_id = request.args.get('property_id')
-    
+
     seasons = ['Spring', 'Summer', 'Fall', 'Winter']
     stats = {}
-    
+
     for season in seasons:
         query = MaintenanceChecklistItem.query.filter_by(
             user_id=current_user_id,
             season=season
         )
-        
+
         if property_id:
             query = query.filter_by(property_id=property_id)
-        
+
         total_items = query.count()
         completed_items = query.filter_by(is_completed=True).count()
-        
+
         completion_percentage = 0
         if total_items > 0:
             completion_percentage = (completed_items / total_items) * 100
-        
+
         stats[season] = {
             'total': total_items,
             'completed': completed_items,
             'percentage': round(completion_percentage, 1)
         }
-    
+
     # Calculate overall stats
     total_all = sum(s['total'] for s in stats.values())
     completed_all = sum(s['completed'] for s in stats.values())
-    
+
     overall_percentage = 0
     if total_all > 0:
         overall_percentage = (completed_all / total_all) * 100
-    
+
     stats['overall'] = {
         'total': total_all,
         'completed': completed_all,
         'percentage': round(overall_percentage, 1)
     }
-    
+
     return jsonify(stats)
 
 def create_default_checklist_items(user_id, property_id, season):
@@ -574,7 +539,7 @@ def create_default_checklist_items(user_id, property_id, season):
             {'task': 'Protect outdoor faucets', 'description': 'Ensure they are drained and insulated'}
         ]
     }
-    
+
     items = []
     for task_data in default_items.get(season, []):
         item = MaintenanceChecklistItem(
@@ -584,10 +549,10 @@ def create_default_checklist_items(user_id, property_id, season):
             description=task_data['description'],
             season=season,
             is_completed=False,
-            is_default=True  # Mark as default item
+            is_default=True
         )
         db.session.add(item)
         items.append(item)
-    
+
     db.session.commit()
     return items

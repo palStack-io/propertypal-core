@@ -52,9 +52,10 @@ const ForgotPasswordForm = () => {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="card w-full max-w-md p-8">
-        <div className="flex justify-center mb-6">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/propertyPal.png" alt="propertyPal" className="h-16 w-16 mb-3" />
           <div className="text-3xl font-bold">
-            <span className="property-text">Property</span>Pal
+            <span className="property-text">property</span><span className="text-white">Pal</span>
           </div>
         </div>
         

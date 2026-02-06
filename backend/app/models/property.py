@@ -23,17 +23,15 @@ class Property(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
    
-    # Define relationship with user
+    # Define relationship with user (single owner only in open source)
     user = db.relationship('User', back_populates='properties')
     documents = db.relationship('Document', back_populates='property', cascade='all, delete-orphan')
     maintenance_requests = db.relationship('Maintenance', back_populates='property', cascade='all, delete-orphan')
     appliances = db.relationship('Appliance', back_populates='property', cascade='all, delete-orphan')
     projects = db.relationship('Project', back_populates='property', cascade='all, delete-orphan')
-    tenants = db.relationship('Tenant', back_populates='property', cascade='all, delete-orphan')
     expenses = db.relationship('Expense', back_populates='property', cascade='all, delete-orphan')
     budgets = db.relationship('Budget', back_populates='property', cascade='all, delete-orphan')
     is_primary_residence = db.Column(db.Boolean, default=False)
-    property_users = db.relationship('PropertyUser', back_populates='property', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Property {self.id}: {self.address}>'

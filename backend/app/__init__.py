@@ -1,5 +1,5 @@
 # app/__init__.py
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
@@ -13,6 +13,30 @@ db = SQLAlchemy()
 jwt = JWTManager()
 migrate = Migrate()
 mail = Mail()
+
+def auto_seed_demo():
+    """Auto-seed demo accounts if DEMO_MODE is enabled and no users exist"""
+    from app.models.user import User
+
+    # Check if demo mode is enabled
+    demo_mode = os.environ.get('DEMO_MODE', 'false').lower() == 'true'
+    if not demo_mode:
+        return
+
+    # Check if users already exist
+    user_count = User.query.count()
+    if user_count > 0:
+        print(f"Demo mode: {user_count} users already exist, skipping seed")
+        return
+
+    # Seed demo accounts
+    print("Demo mode enabled: Seeding demo accounts...")
+    try:
+        from seed_demo_accounts import seed_demo_accounts
+        count = seed_demo_accounts(silent=False)
+        print(f"Demo mode: Created {count} demo accounts")
+    except Exception as e:
+        print(f"Demo mode: Failed to seed accounts - {str(e)}")
 
 def create_app(config_class=Config):
     
@@ -99,7 +123,7 @@ def create_app(config_class=Config):
 
 
 
-    # Register blueprints for API routes
+    # Register blueprints for API routes - PropertyPal Core (Single property, multi-user)
     from app.api.auth import auth_bp
     from app.api.properties import properties_bp
     from app.api.documents import documents_bp
@@ -111,8 +135,6 @@ def create_app(config_class=Config):
     from app.api.finances import finances_bp
     from app.api.users import users_bp
     from app.api.settings import settings_bp
-    from app.api.tenants import tenants_bp
-    from app.api.property_users import property_users_bp
     from app.api.integrations import integrations_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -126,8 +148,14 @@ def create_app(config_class=Config):
     app.register_blueprint(finances_bp, url_prefix='/api/finances')
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
-    app.register_blueprint(tenants_bp, url_prefix='/api/tenants')
-    app.register_blueprint(property_users_bp, url_prefix='/api/property-users')
     app.register_blueprint(integrations_bp, url_prefix='/api/integrations')
+
+    # Auto-seed demo accounts if DEMO_MODE is enabled
+    with app.app_context():
+        try:
+            auto_seed_demo()
+        except Exception as e:
+            print(f"Auto-seed error (non-fatal): {str(e)}")
+
     return app
 

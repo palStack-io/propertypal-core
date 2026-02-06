@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../layout/Navigation';
-import PropertySelector from '../layout/PropertySelector';
 import { apiHelpers } from '../../services/api';
 
 const Appliances = () => {
@@ -359,11 +358,6 @@ const Appliances = () => {
           </div>
           
           <div className="mt-4 md:mt-0 flex items-center gap-4">
-            <PropertySelector 
-              currentProperty={currentProperty} 
-              onSelectProperty={handleSelectProperty} 
-            />
-            
             <button 
               className="btn-secondary text-sm px-4 py-2 rounded-md flex items-center"
               onClick={() => setShowAddForm(true)}
@@ -425,18 +419,18 @@ const Appliances = () => {
             </button>
           </div>
           
-          <div className="relative">
-            <input 
-              type="text" 
-              className="form-input w-full md:w-64 py-2 pl-10" 
-              placeholder="Search appliances..." 
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              className="form-input w-full md:w-64 py-2 pl-10"
+              placeholder="Search appliances..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <svg 
-              className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>

@@ -1,19 +1,32 @@
 # ======================================
 # DOCUMENTATION
 # ======================================
-# Keep only essential documentation
-# Ignore temporary/generated docs
+# Ignore most markdown files
+*.md
+
+# Keep essential documentation
+!README.md
+!CHANGELOG.md
+!LICENSE.md
+!CONTRIBUTING.md
+!docs/**/*.md
+
+# Ignore temp/generated docs
 *_SUMMARY.md
 *_NOTES.md
 .claude/
 
-# Keep important documentation
-!README.md
-!CHANGELOG.md
-!QUICK_START.md
-!DEPLOYMENT_CHECKLIST.md
-!DOCKER.md
-!docs/
+# ======================================
+# SHELL SCRIPTS
+# ======================================
+# Ignore shell scripts (sensitive/local)
+*.sh
+
+# Keep essential scripts
+!run.sh
+!docker-entrypoint.sh
+!backend/entrypoint.sh
+!frontend/docker-entrypoint.sh
 
 # Python
 __pycache__/

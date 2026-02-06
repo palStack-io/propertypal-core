@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../layout/Navigation';
-import PropertySelector from '../layout/PropertySelector';
 import { apiHelpers } from '../../services/api';
 
 const Budget = () => {
@@ -481,14 +480,8 @@ const Budget = () => {
             <p className="text-gray-400 mt-1">Plan and track your home expenses</p>
           </div>
           
-          <div className="mt-4 md:mt-0">
-            <PropertySelector 
-              currentProperty={currentProperty} 
-              onSelectProperty={handleSelectProperty} 
-            />
-          </div>
         </div>
-        
+
         {/* Error and message display */}
         {error && (
           <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">

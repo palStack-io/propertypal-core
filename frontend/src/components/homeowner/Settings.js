@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../layout/Navigation';
-import { apiHelpers } from '../../services/api';
-import PropertyUsers from '../property/PropertyUsers'; 
+import { apiHelpers } from '../../services/api'; 
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -483,18 +482,6 @@ const Settings = () => {
                   Property Settings
                 </button>
 
-                {/* New Property Users Tab */}
-                <button
-                  className={`px-4 py-2 rounded-md text-left flex items-center ${
-                    activeTab === 'users' ? 'bg-sky-900 bg-opacity-20 text-sky-400' : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700'
-                  }`}
-                  onClick={() => setActiveTab('users')}
-                >
-                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                  </svg>
-                  Property Users
-                </button>
                 
                 <button
                   className={`px-4 py-2 rounded-md text-left flex items-center ${
@@ -554,6 +541,18 @@ const Settings = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                   </svg>
                   API Keys
+                </button>
+
+                <button
+                  className={`px-4 py-2 rounded-md text-left flex items-center ${
+                    activeTab === 'about' ? 'bg-sky-900 bg-opacity-20 text-sky-400' : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('about')}
+                >
+                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  About
                 </button>
               </nav>
             </div>
@@ -720,13 +719,13 @@ const Settings = () => {
                           </div>
                         ) : properties.length === 0 ? (
                           <div className="bg-gray-700 p-4 rounded-md text-center">
-                            <p className="text-gray-300">No properties found. Add a property to set as your primary residence.</p>
+                            <p className="text-gray-300">No property found. Please complete your property setup.</p>
                             <button
                               type="button"
                               className="btn-secondary mt-3 text-sm px-4 py-2 rounded-md"
-                              onClick={() => navigate('/add-property')}
+                              onClick={() => navigate('/setup-property')}
                             >
-                              Add Property
+                              Set Up Property
                             </button>
                           </div>
                         ) : (
@@ -758,13 +757,6 @@ const Settings = () => {
                 </div>
               )}
 
-              {/* New Property Users Tab */}
-              {activeTab === 'users' && (
-                <PropertyUsers 
-                  currentProperty={currentProperty}
-                  setCurrentProperty={setCurrentProperty}
-                />
-              )}
               
               {/* Notifications Tab */}
               {activeTab === 'notifications' && (
@@ -1007,7 +999,7 @@ const Settings = () => {
                   <div className="space-y-8">
                     <div>
                       <h3 className="text-lg font-medium mb-2">Data Export</h3>
-                      <p className="text-gray-400 mb-4">Download a copy of your PropertyPal data</p>
+                      <p className="text-gray-400 mb-4">Download a copy of your propertyPal data</p>
                       <button className="btn-secondary text-sm px-4 py-2 rounded-md">
                         <svg className="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"></path>
@@ -1211,16 +1203,108 @@ const Settings = () => {
                   <div className="mt-6 bg-blue-900 bg-opacity-20 border border-blue-800 rounded-lg p-4">
                     <h3 className="font-semibold mb-2">📚 Integration Guide</h3>
                     <p className="text-sm text-gray-300 mb-3">
-                      Learn how to integrate PropertyPal with Home Assistant using API keys
+                      Learn how to integrate propertyPal with Home Assistant using API keys
                     </p>
                     <a
-                      href="https://github.com/yourrepo/propertypal/blob/main/HOME_ASSISTANT_INTEGRATION.md"
+                      href="https://github.com/palStack-io/propertypal-core/blob/main/HOME_ASSISTANT_INTEGRATION.md"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sky-400 hover:text-sky-300 text-sm"
                     >
                       View Documentation →
                     </a>
+                  </div>
+                </div>
+              )}
+
+              {/* About Tab */}
+              {activeTab === 'about' && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-6">About propertyPal</h2>
+
+                  <div className="space-y-6">
+                    {/* Logo and Version */}
+                    <div className="flex items-center space-x-4">
+                      <img src="/propertyPal.png" alt="propertyPal" className="h-16 w-16" />
+                      <div>
+                        <h3 className="text-2xl font-bold">
+                          <span className="text-sky-400">property</span><span className="text-white">Pal</span>
+                        </h3>
+                        <p className="text-gray-400 text-sm">Open Source Property Management</p>
+                        <p className="text-gray-500 text-xs mt-1">Version 1.0.0 (Core)</p>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <p className="text-gray-300">
+                        propertyPal is a comprehensive property management tool designed for homeowners.
+                        Track maintenance, manage documents, monitor expenses, and stay on top of your property's needs.
+                      </p>
+                    </div>
+
+                    {/* palStack Ecosystem */}
+                    <div className="border-t border-gray-700 pt-6">
+                      <h3 className="text-lg font-medium mb-4">Part of the palStack Ecosystem</h3>
+                      <p className="text-gray-400 text-sm mb-4">
+                        propertyPal is part of the palStack family of open-source tools designed to help you manage your life.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <a
+                          href="https://palstack.io"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gray-800 hover:bg-gray-700 rounded-lg p-4 transition-colors"
+                        >
+                          <div className="flex items-center">
+                            <div className="text-2xl mr-3">🏠</div>
+                            <div>
+                              <div className="font-medium text-white">palStack.io</div>
+                              <div className="text-sm text-gray-400">Explore the ecosystem</div>
+                            </div>
+                          </div>
+                        </a>
+                        <a
+                          href="https://propertyPal.palstack.io"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gray-800 hover:bg-gray-700 rounded-lg p-4 transition-colors"
+                        >
+                          <div className="flex items-center">
+                            <div className="text-2xl mr-3">📘</div>
+                            <div>
+                              <div className="font-medium text-white">propertyPal Docs</div>
+                              <div className="text-sm text-gray-400">Documentation & guides</div>
+                            </div>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Open Source */}
+                    <div className="border-t border-gray-700 pt-6">
+                      <h3 className="text-lg font-medium mb-4">Open Source</h3>
+                      <p className="text-gray-400 text-sm mb-4">
+                        propertyPal Core is open source and available on GitHub. Contributions are welcome!
+                      </p>
+                      <a
+                        href="https://github.com/palStack-io/propertypal-core"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center bg-gray-800 hover:bg-gray-700 rounded-lg px-4 py-2 transition-colors"
+                      >
+                        <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                          <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                        </svg>
+                        View on GitHub
+                      </a>
+                    </div>
+
+                    {/* Credits */}
+                    <div className="border-t border-gray-700 pt-6 text-center text-gray-500 text-sm">
+                      <p>Made with ❤️ by the palStack team</p>
+                      <p className="mt-1">© 2024 palStack. All rights reserved.</p>
+                    </div>
                   </div>
                 </div>
               )}

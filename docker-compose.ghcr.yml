@@ -1,0 +1,80 @@
+# Docker Compose file using pre-built images from GitHub Container Registry
+# Use this for quick deployment without building locally
+#
+# Usage:
+#   docker-compose -f docker-compose.ghcr.yml up -d
+#
+# Note: Make sure to copy .env.example to .env and configure before running
+
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: propertypal-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-propertypal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-propertypal}
+      POSTGRES_DB: ${POSTGRES_DB:-propertypal}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - propertypal-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-propertypal}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: ghcr.io/palstack-io/propertypal-backend:latest
+    container_name: propertypal-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-propertypal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-propertypal}
+      POSTGRES_DB: ${POSTGRES_DB:-propertypal}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
+      FLASK_ENV: ${FLASK_ENV:-production}
+      DEBUG: ${DEBUG:-false}
+      DEMO_MODE: ${DEMO_MODE:-false}
+      SKIP_EMAIL_VERIFICATION: ${SKIP_EMAIL_VERIFICATION:-true}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
+    volumes:
+      - app_uploads:/app/uploads
+    expose:
+      - "5008"
+    networks:
+      - propertypal-network
+
+  frontend:
+    image: ghcr.io/palstack-io/propertypal-frontend:latest
+    container_name: propertypal-frontend
+    depends_on:
+      - backend
+    expose:
+      - "3000"
+    networks:
+      - propertypal-network
+
+  nginx:
+    image: ghcr.io/palstack-io/propertypal-nginx:latest
+    container_name: propertypal-nginx
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "${PORT:-80}:80"
+    networks:
+      - propertypal-network
+
+networks:
+  propertypal-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  app_uploads:

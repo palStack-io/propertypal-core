@@ -8,7 +8,6 @@ class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     property_id = db.Column(db.Integer, db.ForeignKey('properties.id'), nullable=True)
-    tenant_id = db.Column(db.Integer, db.ForeignKey('tenants.id'), nullable=True)
     appliance_id = db.Column(db.Integer, db.ForeignKey('appliances.id'), nullable=True)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -23,7 +22,6 @@ class Document(db.Model):
     # Relationships
     user = db.relationship('User', back_populates='documents')
     property = db.relationship('Property', back_populates='documents')
-    tenant = db.relationship('Tenant', back_populates='documents')
     appliance = db.relationship('Appliance', back_populates='documents')
 
     def __repr__(self):

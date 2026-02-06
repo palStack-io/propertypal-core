@@ -7,7 +7,6 @@ import uuid
 from app import db
 from app.models.document import Document
 from app.models.property import Property
-from app.models.Property_user import PropertyUser
 
 property_photos_bp = Blueprint('property_photos', __name__)
 
@@ -21,63 +20,54 @@ def allowed_file(filename):
 def upload_property_photo():
     """Upload a new property photo"""
     current_user_id = int(get_jwt_identity())
-    
+
     # Check if request has the file
     if 'file' not in request.files:
         return jsonify({"error": "No file provided"}), 400
-    
+
     file = request.files['file']
-    
+
     # Check if filename is empty
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
-    
+
     # Check if property_id is provided
     property_id = request.form.get('property_id')
     if not property_id:
         return jsonify({"error": "Property ID is required"}), 400
-    
-    property_user = PropertyUser.query.filter_by(
-    property_id=property_id,
-    user_id=current_user_id,
-    status='active'
-    ).first()
 
-    if not property_user or property_user.role not in ['owner', 'manager']:
-        return jsonify({"error": "Property not found or you don't have permission to upload photos"}), 403
-
-    # Get the property (we still need it for later use)
-    property = Property.query.get(property_id)
+    # Verify property belongs to user
+    property = Property.query.filter_by(id=property_id, user_id=current_user_id).first()
     if not property:
         return jsonify({"error": "Property not found"}), 404
-        
+
     # Check if file type is allowed
     if not allowed_file(file.filename):
         return jsonify({"error": f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"}), 400
-    
+
     # Get base folder path
     photos_base_folder = os.path.join(current_app.root_path, 'uploads/documents/photos')
-    
+
     # Create property-specific folder
     property_folder = os.path.join(photos_base_folder, f"property_{property_id}")
     os.makedirs(property_folder, exist_ok=True)
-    
+
     # Secure the filename and generate a unique filename
     filename = secure_filename(file.filename)
     unique_filename = f"{uuid.uuid4()}_{filename}"
     file_path = os.path.join(property_folder, unique_filename)
-    
+
     # Get form data
     title = request.form.get('title', 'Property Photo')
     is_primary = request.form.get('is_primary', 'false').lower() == 'true'
-    
+
     # Save the file
     file.save(file_path)
-    
+
     # Get file metadata
     file_size = os.path.getsize(file_path)
     file_type = file.content_type or 'image/jpeg'
-    
+
     # Create document record
     new_photo = Document(
         user_id=current_user_id,
@@ -87,18 +77,18 @@ def upload_property_photo():
         file_path=file_path,
         file_type=file_type,
         file_size=file_size,
-        category='property_photo'  # Use category to identify images
+        category='property_photo'
     )
-    
+
     db.session.add(new_photo)
-    
+
     # If this is set as primary, update property's main image_url
     if is_primary:
         relative_path = f"/uploads/documents/photos/property_{property_id}/{unique_filename}"
         property.image_url = relative_path
-    
+
     db.session.commit()
-    
+
     return jsonify({
         'id': new_photo.id,
         'title': new_photo.title,
@@ -112,34 +102,23 @@ def upload_property_photo():
 def get_property_photos(property_id):
     """Get all photos for a specific property"""
     current_user_id = int(get_jwt_identity())
-    
-    # Verify user has access to this property
-    property_user = PropertyUser.query.filter_by(
-        property_id=property_id,
-        user_id=current_user_id,
-        status='active'
-    ).first()
-    
-    if not property_user or property_user.role not in ['owner', 'manager']:
-        return jsonify({"error": "Property not found or you don't have permission to view photos"}), 403
-    
-    # Get the property
-    property = Property.query.get(property_id)
+
+    # Verify property belongs to user
+    property = Property.query.filter_by(id=property_id, user_id=current_user_id).first()
     if not property:
         return jsonify({"error": "Property not found"}), 404
-    
+
     # Query documents that are photos for this property
-    # We don't need to filter by user_id anymore, as we've already verified access
     photos = Document.query.filter_by(
         property_id=property_id,
         category='property_photo'
     ).order_by(Document.created_at.desc()).all()
-    
+
     result = []
     for photo in photos:
         # Extract filename from file_path
         filename = os.path.basename(photo.file_path)
-        
+
         result.append({
             'id': photo.id,
             'title': photo.title,
@@ -147,9 +126,9 @@ def get_property_photos(property_id):
             'url': f"/uploads/documents/photos/property_{property_id}/{filename}",
             'is_primary': property.image_url == f"/uploads/documents/photos/property_{property_id}/{filename}",
             'created_at': photo.created_at.isoformat(),
-            'created_by': photo.user_id  # Include who uploaded the photo
+            'created_by': photo.user_id
         })
-    
+
     return jsonify(result)
 
 @property_photos_bp.route('/<int:photo_id>/set-primary', methods=['PUT'])
@@ -157,33 +136,23 @@ def get_property_photos(property_id):
 def set_primary_photo(photo_id):
     """Set a photo as the primary photo for a property"""
     current_user_id = int(get_jwt_identity())
-    
+
     photo = Document.query.filter_by(id=photo_id, category='property_photo').first()
     if not photo:
         return jsonify({"error": "Photo not found"}), 404
-    
-    # Check if user has permission for this property
-    property_user = PropertyUser.query.filter_by(
-        property_id=photo.property_id,
-        user_id=current_user_id,
-        status='active'
-    ).first()
-    
-    if not property_user or property_user.role not in ['owner', 'manager']:
-        return jsonify({"error": "You don't have permission to set the primary photo"}), 403
-    
-    # Get the property
-    property = Property.query.get(photo.property_id)
+
+    # Verify property belongs to user
+    property = Property.query.filter_by(id=photo.property_id, user_id=current_user_id).first()
     if not property:
         return jsonify({"error": "Property not found"}), 404
-    
+
     # Extract filename from file_path
     filename = os.path.basename(photo.file_path)
-    
+
     # Update property's main image_url
     property.image_url = f"/uploads/documents/photos/property_{photo.property_id}/{filename}"
     db.session.commit()
-    
+
     return jsonify({
         'id': photo.id,
         'message': 'Photo set as primary successfully'
@@ -194,36 +163,29 @@ def set_primary_photo(photo_id):
 def delete_property_photo(photo_id):
     """Delete a property photo"""
     current_user_id = int(get_jwt_identity())
-    
+
     photo = Document.query.filter_by(id=photo_id, category='property_photo').first()
     if not photo:
         return jsonify({"error": "Photo not found"}), 404
-    
-    # Check if user has permission for this property
-    property_user = PropertyUser.query.filter_by(
-        property_id=photo.property_id,
-        user_id=current_user_id,
-        status='active'
-    ).first()
-    
-    if not property_user or property_user.role not in ['owner', 'manager']:
-        return jsonify({"error": "You don't have permission to delete this photo"}), 403
-    
+
+    # Verify property belongs to user
+    property = Property.query.filter_by(id=photo.property_id, user_id=current_user_id).first()
+    if not property:
+        return jsonify({"error": "Property not found"}), 404
+
     # Check if this is the primary photo
-    property = Property.query.get(photo.property_id)
     filename = os.path.basename(photo.file_path)
-    
-    if property and property.image_url == f"/uploads/documents/photos/property_{photo.property_id}/{filename}":
+    if property.image_url == f"/uploads/documents/photos/property_{photo.property_id}/{filename}":
         property.image_url = None
-    
+
     # Delete the file from storage
     if os.path.exists(photo.file_path):
         os.remove(photo.file_path)
-    
+
     # Delete from database
     db.session.delete(photo)
     db.session.commit()
-    
+
     return jsonify({
         'message': 'Photo deleted successfully'
     })

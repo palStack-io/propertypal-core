@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navigation from '../layout/Navigation';
-import PropertySelector from '../layout/PropertySelector';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -727,14 +726,8 @@ const Reports = () => {
             <p className="text-gray-400 mt-1">Analyze your home expenses and budget</p>
           </div>
           
-          <div className="mt-4 md:mt-0">
-            <PropertySelector 
-              currentProperty={currentProperty} 
-              onSelectProperty={handleSelectProperty} 
-            />
-          </div>
         </div>
-        
+
         {/* Error and message display */}
         {error && (
           <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">

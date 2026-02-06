@@ -1,0 +1,23 @@
+# Development override - exposes ports directly for hot-reload
+version: '3.8'
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app  # Hot-reload
+    environment:
+      - FLASK_ENV=development
+      - DEBUG=true
+    ports:
+      - "5008:5008"
+
+  frontend:
+    environment:
+      - REACT_APP_API_URL=http://localhost:5008
+    ports:
+      - "3000:3000"
+
+  # Disable nginx in development
+  nginx:
+    profiles:
+      - production

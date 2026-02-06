@@ -9,19 +9,31 @@
 # ======================================
 # DOCUMENTATION
 # ======================================
-# Keep documentation lightweight in Docker images
-# Exclude temporary/generated docs
+# Exclude all markdown files from Docker images
+*.md
+
+# Keep only essential docs if needed
+!README.md
+
+# Exclude temp/generated docs
 *_SUMMARY.md
 *_NOTES.md
 .claude/
 
-# Include only essential docs
-!README.md
-!CHANGELOG.md
-!DOCKER.md
-
 # Archive documentation not needed in containers
-docs/archive/
+docs/
+
+# ======================================
+# SHELL SCRIPTS
+# ======================================
+# Exclude most shell scripts
+*.sh
+
+# Keep essential entrypoint scripts
+!entrypoint.sh
+!docker-entrypoint.sh
+!backend/entrypoint.sh
+!frontend/docker-entrypoint.sh
 
 # Environment files
 .env
