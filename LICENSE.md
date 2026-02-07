@@ -1,37 +1,87 @@
-HomieHQ Personal Use License
+# License
 
-Copyright (c) 2025 HomieHQ
+Copyright (c) 2025 palStack
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to use
-the Software for personal, non-commercial purposes only, subject to the following 
-conditions:
+This project is dual-licensed under:
 
-1. The Software may be used for personal property management only.
-   "Personal use" is defined as managing properties owned or rented by the user
-   or their immediate family members.
+## 1. GNU Affero General Public License v3.0 (AGPL-3.0)
 
-2. The Software may not be used for any commercial purpose, including but not limited to:
-   - Managing properties for others in exchange for payment
-   - Offering property management services based on this Software
-   - Selling access to installations of this Software
-   - Incorporating this Software into a commercial product or service
+For open source use, this software is licensed under the AGPL-3.0 license.
 
-3. Redistributions of the source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
+### You are free to:
 
-4. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+- Use this software for personal, non-commercial purposes
+- Self-host on your own infrastructure
+- Modify and create derivative works
 
-5. Neither the name of HomieHQ nor the names of its contributors may be used to
-   endorse or promote products derived from this Software without specific prior
-   written permission.
+**Full AGPL-3.0 license text:** https://www.gnu.org/licenses/agpl-3.0.en.html
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+---
+
+## 2. Commercial License
+
+For commercial use without the requirements of AGPL-3.0, palStack offers commercial licensing.
+
+### Commercial license is required if you want to:
+
+- Offer this software as a hosted/SaaS service without open-sourcing your modifications
+- Integrate this software into proprietary applications
+- Deploy in enterprise environments without AGPL compliance requirements
+
+### palStack Premium Features
+
+palStack reserves the right to develop and distribute premium features, plugins, and extensions under a separate proprietary license. These premium offerings may include:
+
+- Advanced analytics and reporting
+- Enterprise integrations (Home Assistant, etc.)
+- Mobile applications
+- Priority support
+- Managed hosting services
+- Additional modules and functionality
+
+Premium features are not part of the AGPL-3.0 licensed core and are available only through commercial licensing from palStack.
+
+**Contact for commercial licensing:** palstack4u@gmail.com
+
+---
+
+## Which License Should You Choose?
+
+### Use AGPL-3.0 if:
+
+- You're self-hosting for personal/family use
+- You're okay with sharing your modifications publicly
+- You're contributing to the open source community
+- You only need the core features
+
+### Get a commercial license if:
+
+- You want to offer this as a hosted service
+- You need to keep your modifications proprietary
+- You want access to premium features and modules
+- You need enterprise support
+
+---
+
+## Contributions
+
+By contributing to this project, you agree that:
+
+- Your contributions will be licensed under both AGPL-3.0 and available for commercial licensing by palStack
+- You retain copyright to your contributions
+- You grant palStack permission to use your contributions in both open source and commercial offerings
+
+This dual-licensing model is similar to those used by MongoDB, GitLab, and other successful open source companies.
+
+---
+
+## Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+**Part of the palStack ecosystem**  
+*"That's what pals do – they show up and help with the everyday stuff."*
+
+For licensing questions: palstack4u@gmail.com
