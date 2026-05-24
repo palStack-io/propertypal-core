@@ -11,6 +11,16 @@ from datetime import datetime, timedelta
 # Create blueprint
 auth_bp = Blueprint('auth', __name__)
 
+# Only declare features that core actually supports. Any key absent here is treated
+# as False by the client, so new premium features need no changes in core.
+CORE_CAPABILITIES = {
+    'server_type': 'core',
+    'subscription_tier': None,
+    'features': {
+        'maintenance_to_expense': True,
+    },
+}
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -111,7 +121,8 @@ def login():
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "email_verified": user.email_verified
+            "email_verified": user.email_verified,
+            **CORE_CAPABILITIES,
         }
     }), 200
 
@@ -142,7 +153,8 @@ def get_user():
         "email": user.email,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "phone": user.phone
+        "phone": user.phone,
+        **CORE_CAPABILITIES,
     }), 200
 
 @auth_bp.route('/forgot-password', methods=['POST'])

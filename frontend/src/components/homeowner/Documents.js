@@ -324,7 +324,7 @@ const Documents = () => {
         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
           <div>
             <h1 className="text-2xl font-bold">Documents</h1>
-            <p className="text-gray-400 mt-1">Manage all your property documents</p>
+            <p className="t-secondary mt-1">Manage all your property documents</p>
           </div>
 
           <div className="mt-4 md:mt-0 flex items-center gap-4">
@@ -348,7 +348,7 @@ const Documents = () => {
 
         {/* Error and message display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+          <div className="alert-error mb-6">
             {error}
             <button
               className="float-right text-red-400 hover:text-red-300"
@@ -362,7 +362,7 @@ const Documents = () => {
         )}
 
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+          <div className="alert-success mb-6">
             {message}
             <button
               className="float-right text-green-400 hover:text-green-300"
@@ -379,43 +379,43 @@ const Documents = () => {
         <div className="flex flex-col md:flex-row justify-between mb-6">
           <div className="flex overflow-x-auto pb-2 mb-4 md:mb-0">
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'all' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'all' ? ' active' : ''}`}
               onClick={() => setFilter('all')}
             >
               All Documents
             </button>
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'property_photo' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'property_photo' ? ' active' : ''}`}
               onClick={() => setFilter('property_photo')}
             >
               Property Photos
             </button>
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'insurance' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'insurance' ? ' active' : ''}`}
               onClick={() => setFilter('insurance')}
             >
               Insurance
             </button>
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'legal' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'legal' ? ' active' : ''}`}
               onClick={() => setFilter('legal')}
             >
               Legal
             </button>
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'financial' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'financial' ? ' active' : ''}`}
               onClick={() => setFilter('financial')}
             >
               Financial
             </button>
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'maintenance' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'maintenance' ? ' active' : ''}`}
               onClick={() => setFilter('maintenance')}
             >
               Maintenance
             </button>
             <button
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'other' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`filter-pill mr-2${filter === 'other' ? ' active' : ''}`}
               onClick={() => setFilter('other')}
             >
               Other
@@ -426,12 +426,12 @@ const Documents = () => {
             <input
               type="text"
               className="form-input w-full md:w-64 py-2 pl-10"
-              placeholder="Search documents..."
+              placeholder=""
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <svg
-              className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="h-5 w-5 t-muted absolute left-3 top-1/2 transform -translate-y-1/2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -448,15 +448,15 @@ const Documents = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-3 text-gray-400">Loading documents...</p>
+            <p className="mt-3 t-secondary">Loading documents...</p>
           </div>
         ) : filteredDocuments.length === 0 ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No documents found</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="t-secondary mb-6">
               {searchTerm
                 ? `No results for "${searchTerm}"`
                 : filter !== 'all'
@@ -482,17 +482,17 @@ const Documents = () => {
               <div key={doc.id} className="card overflow-hidden">
                 <div className="p-6">
                   <div className="flex items-start mb-4">
-                    <div className="p-2 rounded bg-gray-700 mr-3">
+                    <div className="p-2 rounded mr-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                       {getFileIcon(doc.file_type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-lg truncate">{doc.title}</h3>
-                      <p className="text-xs text-gray-400 truncate">{doc.description}</p>
+                      <p className="text-xs t-secondary truncate">{doc.description}</p>
 
                       {/* Show property photo badge */}
                       {doc.category === 'property_photo' && (
                         <div className="mt-1 text-xs">
-                          <span className="px-2 py-0.5 rounded-full bg-purple-900 bg-opacity-20 text-purple-400">
+                          <span className="badge badge-brand">
                             Property Photo
                           </span>
                         </div>
@@ -500,14 +500,14 @@ const Documents = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-between text-xs text-gray-400 mb-4">
+                  <div className="flex justify-between text-xs t-secondary mb-4">
                     <span>{doc.file_type ? doc.file_type.split('/')[1]?.toUpperCase() : 'DOC'}</span>
                     <span>{doc.file_size ? formatFileSize(doc.file_size) : 'Unknown size'}</span>
                   </div>
 
-                  <div className="flex justify-between text-xs text-gray-400 mb-4">
+                  <div className="flex justify-between text-xs t-secondary mb-4">
                     <span>{doc.created_at ? new Date(doc.created_at).toLocaleDateString() : 'Unknown date'}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-gray-700">
+                    <span className="badge badge-neutral">
                       {doc.category ? doc.category.charAt(0).toUpperCase() + doc.category.slice(1).replace('_', ' ') : 'Other'}
                     </span>
                   </div>
@@ -598,11 +598,11 @@ const Documents = () => {
 
                   <div className="mb-6">
                     <label className="form-label">Document File*</label>
-                    <div className="flex items-center justify-center border-2 border-dashed border-gray-600 rounded-md p-6">
+                    <div className="flex items-center justify-center border-2 border-dashed rounded-md p-6 border-themed">
                       {uploadData.file ? (
                         <div className="text-center">
-                          <p className="text-sm text-gray-300">{uploadData.file.name}</p>
-                          <p className="text-xs text-gray-400 mt-1">{formatFileSize(uploadData.file.size)}</p>
+                          <p className="text-sm t-primary">{uploadData.file.name}</p>
+                          <p className="text-xs t-secondary mt-1">{formatFileSize(uploadData.file.size)}</p>
                           <button
                             type="button"
                             className="text-xs text-red-500 mt-2"
@@ -613,10 +613,10 @@ const Documents = () => {
                         </div>
                       ) : (
                         <div className="text-center">
-                          <svg className="h-12 w-12 text-gray-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="h-12 w-12 t-muted mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                           </svg>
-                          <p className="text-sm text-gray-400 mb-2">Drag and drop a file or</p>
+                          <p className="text-sm t-secondary mb-2">Drag and drop a file or</p>
                           <label className="btn-secondary text-xs px-3 py-1 rounded-md cursor-pointer">
                             Browse Files
                             <input
@@ -629,7 +629,7 @@ const Documents = () => {
                       )}
                     </div>
                     {uploadData.category === 'property_photo' && (
-                      <p className="text-xs text-gray-400 mt-2">
+                      <p className="text-xs t-secondary mt-2">
                         Note: Property photos will be stored in a special location and displayed in your property gallery.
                       </p>
                     )}
@@ -638,7 +638,7 @@ const Documents = () => {
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                      className="t-secondary px-4 py-2 mr-2"
                       onClick={() => setUploadModalOpen(false)}
                     >
                       Cancel

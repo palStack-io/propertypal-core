@@ -268,7 +268,7 @@ const Appliances = () => {
 
   // Get warranty status and styling
   const getWarrantyStatus = (expirationDate) => {
-    if (!expirationDate) return { text: 'No warranty', className: 'text-gray-400' };
+    if (!expirationDate) return { text: 'No warranty', className: 't-muted' };
     
     const today = new Date();
     const expiration = new Date(expirationDate);
@@ -354,7 +354,7 @@ const Appliances = () => {
         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
           <div>
             <h1 className="text-2xl font-bold">Appliances & Warranty Tracking</h1>
-            <p className="text-gray-400 mt-1">Track warranties and maintenance for all your home appliances</p>
+            <p className="t-secondary mt-1">Track warranties and maintenance for all your home appliances</p>
           </div>
           
           <div className="mt-4 md:mt-0 flex items-center gap-4">
@@ -373,13 +373,13 @@ const Appliances = () => {
         
         {/* Error and message display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+          <div className="alert-error mb-6">
             {error}
           </div>
         )}
         
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+          <div className="alert-success mb-6">
             {message}
           </div>
         )}
@@ -387,32 +387,32 @@ const Appliances = () => {
         {/* Filters and search */}
         <div className="flex flex-col md:flex-row justify-between mb-6">
           <div className="flex overflow-x-auto pb-2 mb-4 md:mb-0">
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'all' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'all' ? ' active' : ''}`}
               onClick={() => setFilter('all')}
             >
               All Appliances
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'kitchen' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'kitchen' ? ' active' : ''}`}
               onClick={() => setFilter('kitchen')}
             >
               Kitchen
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'laundry' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'laundry' ? ' active' : ''}`}
               onClick={() => setFilter('laundry')}
             >
               Laundry
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'hvac' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'hvac' ? ' active' : ''}`}
               onClick={() => setFilter('hvac')}
             >
               HVAC
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'electronics' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'electronics' ? ' active' : ''}`}
               onClick={() => setFilter('electronics')}
             >
               Electronics
@@ -423,12 +423,12 @@ const Appliances = () => {
             <input
               type="text"
               className="form-input w-full md:w-64 py-2 pl-10"
-              placeholder="Search appliances..."
+              placeholder=""
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <svg
-              className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="h-5 w-5 t-muted absolute left-3 top-1/2 transform -translate-y-1/2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -559,7 +559,7 @@ const Appliances = () => {
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => setShowAddForm(false)}
                 >
                   Cancel
@@ -697,7 +697,7 @@ const Appliances = () => {
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => {
                     setShowEditForm(false);
                     setEditingApplianceId(null);
@@ -734,23 +734,23 @@ const Appliances = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-3 text-gray-400">Loading appliances...</p>
+            <p className="mt-3 t-secondary">Loading appliances...</p>
           </div>
         ) : !currentProperty ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No Property Selected</h3>
-            <p className="text-gray-400 mb-6">Please select a property to view its appliances</p>
+            <p className="t-secondary mb-6">Please select a property to view its appliances</p>
           </div>
         ) : searchedAppliances.length === 0 ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No appliances found</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="t-secondary mb-6">
               {searchTerm ? `No results for "${searchTerm}"` : 
                filter !== 'all' ? `No ${filter} appliances found` : 
                `No appliances have been added for ${currentProperty.address} yet`}
@@ -769,12 +769,12 @@ const Appliances = () => {
                 <div className="p-6">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center">
-                      <div className="p-2 rounded-full bg-blue-900 bg-opacity-30 mr-3">
+                      <div className="p-2 rounded-full mr-3" style={{ background: 'rgba(56,189,248,0.10)' }}>
                         {getCategoryIcon(appliance.category)}
                       </div>
                       <div>
                         <h4 className="text-sm font-medium">{appliance.name}</h4>
-                        <p className="text-xs text-gray-400">{appliance.brand} {appliance.model}</p>
+                        <p className="text-xs t-secondary">{appliance.brand} {appliance.model}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -785,21 +785,21 @@ const Appliances = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-4 pt-4 border-t border-gray-700">
-                    <div className="flex justify-between text-xs text-gray-400 mb-2">
+                  <div className="mt-4 pt-4 border-t border-themed">
+                    <div className="flex justify-between text-xs t-secondary mb-2">
                       <span>Serial: {appliance.serial_number || 'N/A'}</span>
                       <span>Age: {getApplianceAge(appliance.purchase_date)}</span>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-400 mb-2">
+                    <div className="flex justify-between text-xs t-secondary mb-2">
                       <span>Category: {appliance.category}</span>
                       <span>Location: {appliance.location || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-400 mb-4">
+                    <div className="flex justify-between text-xs t-secondary mb-4">
                       <span>Purchased: {appliance.purchase_date ? new Date(appliance.purchase_date).toLocaleDateString() : 'Unknown'}</span>
                     </div>
                   </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-700">
+
+                  <div className="mt-4 pt-4 border-t border-themed">
                     <div className="flex justify-between">
                       <button 
                         className="text-secondary hover:text-secondary-light text-sm"

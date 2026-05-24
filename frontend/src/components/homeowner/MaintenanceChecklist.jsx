@@ -388,7 +388,7 @@ const MaintenanceChecklist = ({ propertyId, season }) => {
               </button>
               
               <button
-                className="text-gray-400 hover:text-gray-300 bg-gray-700 hover:bg-gray-600 text-sm px-3 py-1.5 rounded-md flex items-center transition-colors"
+                className="t-secondary btn-secondary text-sm px-3 py-1.5 rounded-md flex items-center transition-colors"
                 onClick={() => setShowResetConfirmation(true)}
               >
                 <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -408,7 +408,7 @@ const MaintenanceChecklist = ({ propertyId, season }) => {
               {checklist.stats.completedItems} of {checklist.stats.totalItems} tasks completed ({checklist.stats.completionPercentage}%)
             </span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-2.5">
+          <div className="w-full rounded-full h-2.5" style={{ background: 'var(--bg-card-hover)' }}>
             <div 
               className="bg-sky-400 h-2.5 rounded-full" 
               style={{ width: `${checklist.stats.completionPercentage}%` }}
@@ -543,33 +543,33 @@ const MaintenanceChecklist = ({ propertyId, season }) => {
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-gray-700">
+          <div className="divide-y" style={{ '--tw-divide-opacity': 1, borderColor: 'var(--border)' }}>
             {checklist.items.map(item => (
               <div key={item.id} className="py-3 flex items-start group">
                 <div className="flex-shrink-0 mr-3 mt-1">
-                  <input 
-                    type="checkbox" 
-                    checked={item.is_completed} 
+                  <input
+                    type="checkbox"
+                    checked={item.is_completed}
                     onChange={() => toggleItemCompletion(item)}
-                    className="form-checkbox h-5 w-5 text-sky-400 rounded bg-gray-700 border-gray-600" 
+                    className="form-checkbox h-5 w-5 text-sky-400 rounded"
                   />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between">
-                    <div className={`${item.is_completed ? 'text-gray-400 line-through' : 'text-gray-300'}`}>
+                    <div className={item.is_completed ? 't-muted line-through' : 't-primary'}>
                       <span className="font-medium">{item.task}</span>
-                      
+
                       {item.description && (
-                        <p className="text-sm mt-1 text-gray-400">
+                        <p className="text-sm mt-1 t-secondary">
                           {item.description}
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center ml-4 space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        className="text-gray-400 hover:text-gray-300 p-1 rounded"
+                      <button
+                        className="t-secondary hover:opacity-100 p-1 rounded"
                         onClick={() => startEditing(item)}
                         title="Edit"
                       >
@@ -597,9 +597,7 @@ const MaintenanceChecklist = ({ propertyId, season }) => {
                   )}
                   
                   {item.is_default && (
-                    <span className="inline-block bg-blue-900 bg-opacity-30 text-blue-400 text-xs px-2 py-0.5 rounded-full mt-1">
-                      Default task
-                    </span>
+                    <span className="badge badge-brand text-xs mt-1">Default task</span>
                   )}
                 </div>
               </div>

@@ -24,7 +24,7 @@ const Budget = () => {
     year: new Date().getFullYear(),
     property_id: ''
   });
-  
+
   // Summary statistics
   const [totalBudget, setTotalBudget] = useState(0);
   const [totalSpent, setTotalSpent] = useState(0);
@@ -34,39 +34,39 @@ const Budget = () => {
   const fetchBudgets = useCallback(async (propertyId, year, month) => {
     try {
       setLoading(true);
-      
+
       // Call API with property ID and date filter
       const fetchedBudgets = await apiHelpers.get('finances/budgets/', {
         property_id: propertyId,
         year: year,
         month: month
       });
-      
+
       // Process budget data - check if conversion is needed
       const processedBudgets = (fetchedBudgets || []).map(budget => {
         // If the amount appears to be in cents (>1000), convert it to dollars
         const isDollarAmount = budget.amount < 1000; // Heuristic to detect if already converted
         const displayAmount = isDollarAmount ? budget.amount : budget.amount / 100;
-        
+
         return {
           ...budget,
           amount: displayAmount, // Store as dollars for display
           originalAmount: budget.amount // Keep original for reference
         };
       });
-      
+
       console.log('Fetched budgets (converted to dollars):', processedBudgets);
       setBudgets(processedBudgets);
-      
+
       // Calculate total budget (in dollars)
       const total = processedBudgets.reduce((sum, budget) => sum + budget.amount, 0);
       setTotalBudget(total);
-      
+
       // Calculate percentage used if totalSpent is already set
       if (total > 0 && totalSpent > 0) {
         setPercentageUsed(Math.min(Math.round((totalSpent / total) * 100), 100));
       }
-      
+
       setLoading(false);
     } catch (err) {
       console.error('Error fetching budgets:', err);
@@ -83,37 +83,37 @@ const Budget = () => {
       // Construct start and end date for the month
       const startDate = new Date(year, month - 1, 1);
       const endDate = new Date(year, month, 0);
-      
+
       const startDateStr = startDate.toISOString().split('T')[0];
       const endDateStr = endDate.toISOString().split('T')[0];
-      
+
       // Call API with property ID and date filter
       const fetchedExpenses = await apiHelpers.get('finances/expenses/', {
         property_id: propertyId,
         start_date: startDateStr,
         end_date: endDateStr
       });
-      
+
       // Process expense data - check if conversion is needed
       const processedExpenses = (fetchedExpenses || []).map(expense => {
         // If the amount appears to be in cents (>1000), convert it to dollars
         const isDollarAmount = expense.amount < 1000; // Heuristic to detect if already converted
         const displayAmount = isDollarAmount ? expense.amount : expense.amount / 100;
-        
+
         return {
           ...expense,
           amount: displayAmount, // Store as dollars for display
           originalAmount: expense.amount // Keep original for reference
         };
       });
-      
+
       console.log('Fetched expenses (converted to dollars):', processedExpenses);
       setExpenses(processedExpenses);
-      
+
       // Calculate total spent (in dollars now)
       const total = processedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
       setTotalSpent(total);
-      
+
       // Calculate percentage used if totalBudget is already set
       if (totalBudget > 0 && total > 0) {
         setPercentageUsed(Math.min(Math.round((total / totalBudget) * 100), 100));
@@ -130,35 +130,35 @@ const Budget = () => {
   useEffect(() => {
     const userString = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
-    
+
     if (!userString || !token) {
       navigate('/login');
       return;
     }
-    
+
     setUser(JSON.parse(userString));
-    
+
     // Get current property from localStorage or fetch first property
     const fetchProperties = async () => {
       try {
         const fetchedProperties = await apiHelpers.get('properties/');
-        
+
         if (fetchedProperties.length > 0) {
           // Get current property from localStorage or use the first one
           const savedPropertyId = localStorage.getItem('currentPropertyId');
           let propertyToUse;
-          
+
           if (savedPropertyId) {
             propertyToUse = fetchedProperties.find(p => p.id.toString() === savedPropertyId);
           }
-          
+
           // If no saved property or saved property not found, use first property
           if (!propertyToUse) {
             propertyToUse = fetchedProperties[0];
           }
-          
+
           setCurrentProperty(propertyToUse);
-          
+
           // Fetch budgets and expenses for the selected property
           if (propertyToUse) {
             fetchBudgets(propertyToUse.id, currentYear, currentMonth + 1);
@@ -171,17 +171,17 @@ const Budget = () => {
         setLoading(false);
       }
     };
-    
+
     fetchProperties();
   }, [navigate, currentYear, currentMonth, fetchBudgets, fetchExpenses]);
 
   // Handle property selection from dropdown
   const handleSelectProperty = (property) => {
     setCurrentProperty(property);
-    
+
     // Save to localStorage
     localStorage.setItem('currentPropertyId', property.id);
-    
+
     // Fetch budgets and expenses for the selected property
     fetchBudgets(property.id, currentYear, currentMonth + 1);
     fetchExpenses(property.id, currentYear, currentMonth + 1);
@@ -190,12 +190,12 @@ const Budget = () => {
   // Handle input changes for new budget
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name === 'amount') {
       // Store as regular dollar amount
       // We'll multiply by 100 when sending to API to convert to cents
       const numberValue = value === '' ? '' : parseFloat(value);
-      
+
       setNewBudget({
         ...newBudget,
         [name]: numberValue
@@ -211,16 +211,16 @@ const Budget = () => {
   // Handle editing a budget
   const handleEdit = (budget) => {
     setEditingBudgetId(budget.id);
-    
+
     // When editing, check if the amount needs conversion from cents to dollars
     // If the amount is large (like 20000), it's likely already in cents and needs conversion
     // If the amount is small (like 200), it's probably already in dollars
     const isDollarAmount = budget.amount < 1000; // Heuristic to detect if already converted
     const dollarAmount = isDollarAmount ? budget.amount : budget.amount / 100;
-    
+
     console.log('Editing budget:', budget);
     console.log('Converting amount:', budget.amount, 'to dollars:', dollarAmount);
-    
+
     setNewBudget({
       category: budget.category || 'utilities',
       amount: dollarAmount, // Ensure we're editing in dollars
@@ -234,29 +234,29 @@ const Budget = () => {
   // Handle form submission for new budget
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!newBudget.category || !newBudget.amount) {
       setError('Please fill in all required fields.');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(''); // Clear any previous errors
-      
+
       // Add property ID to budget data and convert amount to cents
       const budgetData = {
         ...newBudget,
         amount: newBudget.amount * 100, // Convert dollars to cents for API
         property_id: currentProperty.id
       };
-      
+
       console.log('Sending to API:', budgetData); // Debug log
-      
+
       // API call to add budget
       await apiHelpers.post('finances/budgets/', budgetData);
-      
+
       // Reset form
       setNewBudget({
         category: 'utilities',
@@ -265,10 +265,10 @@ const Budget = () => {
         year: currentYear,
         property_id: ''
       });
-      
+
       setShowAddForm(false);
       setMessage('Budget added successfully!');
-      
+
       // Reload budgets
       if (currentProperty) {
         fetchBudgets(currentProperty.id, currentYear, currentMonth + 1);
@@ -283,29 +283,29 @@ const Budget = () => {
   // Handle update form submission
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!newBudget.category || !newBudget.amount) {
       setError('Please fill in all required fields.');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(''); // Clear any previous errors
-      
+
       // Add property ID to budget data and convert amount to cents
       const budgetData = {
         ...newBudget,
         amount: newBudget.amount * 100, // Convert dollars to cents for API
         property_id: currentProperty.id
       };
-      
+
       console.log('Sending update to API:', budgetData); // Debug log
-      
+
       // API call to update budget
       await apiHelpers.put(`finances/budgets/${editingBudgetId}`, budgetData);
-      
+
       // Reset form
       setNewBudget({
         category: 'utilities',
@@ -314,11 +314,11 @@ const Budget = () => {
         year: currentYear,
         property_id: ''
       });
-      
+
       setShowEditForm(false);
       setEditingBudgetId(null);
       setMessage('Budget updated successfully!');
-      
+
       // Reload budgets
       if (currentProperty) {
         fetchBudgets(currentProperty.id, currentYear, currentMonth + 1);
@@ -337,9 +337,9 @@ const Budget = () => {
         setLoading(true);
         // API call to delete budget
         await apiHelpers.delete(`finances/budgets/${id}`);
-        
+
         setMessage('Budget deleted successfully!');
-        
+
         // Reload budgets
         if (currentProperty) {
           fetchBudgets(currentProperty.id, currentYear, currentMonth + 1);
@@ -384,7 +384,7 @@ const Budget = () => {
   // Get month name
   const getMonthName = (month) => {
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June', 
+      'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return monthNames[month];
@@ -431,7 +431,7 @@ const Budget = () => {
         );
       default:
         return (
-          <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 t-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
@@ -477,16 +477,16 @@ const Budget = () => {
         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
           <div>
             <h1 className="text-2xl font-bold">Budget Planner</h1>
-            <p className="text-gray-400 mt-1">Plan and track your home expenses</p>
+            <p className="t-secondary mt-1">Plan and track your home expenses</p>
           </div>
-          
+
         </div>
 
         {/* Error and message display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+          <div className="alert-error mb-6">
             {error}
-            <button 
+            <button
               className="float-right text-red-400 hover:text-red-300"
               onClick={() => setError('')}
             >
@@ -496,11 +496,11 @@ const Budget = () => {
             </button>
           </div>
         )}
-        
+
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+          <div className="alert-success mb-6">
             {message}
-            <button 
+            <button
               className="float-right text-green-400 hover:text-green-300"
               onClick={() => setMessage('')}
             >
@@ -510,12 +510,12 @@ const Budget = () => {
             </button>
           </div>
         )}
-        
+
         {/* Month selector and summary */}
         <div className="card p-6 mb-8">
           <div className="flex justify-between items-center mb-6">
             <button
-              className="text-gray-400 hover:text-gray-300"
+              className="t-secondary hover:text-gray-300"
               onClick={goToPreviousMonth}
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -526,7 +526,7 @@ const Budget = () => {
               {getMonthName(currentMonth)} {currentYear}
             </h2>
             <button
-              className="text-gray-400 hover:text-gray-300"
+              className="t-secondary hover:text-gray-300"
               onClick={goToNextMonth}
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -534,30 +534,30 @@ const Budget = () => {
               </svg>
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Budget Card */}
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-sm text-gray-400 mb-1">Total Budget</h3>
+            <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+              <h3 className="text-sm t-secondary mb-1">Total Budget</h3>
               <div className="text-xl font-bold">{formatCurrency(totalBudget)}</div>
             </div>
-            
+
             {/* Total Spent Card */}
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-sm text-gray-400 mb-1">Total Spent</h3>
+            <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+              <h3 className="text-sm t-secondary mb-1">Total Spent</h3>
               <div className={`text-xl font-bold ${totalSpent > totalBudget ? 'text-red-500' : 'text-green-500'}`}>
                 {formatCurrency(totalSpent)}
               </div>
             </div>
-            
+
             {/* Percentage Used Card */}
-            <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-sm text-gray-400 mb-1">Percentage Used</h3>
+            <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+              <h3 className="text-sm t-secondary mb-1">Percentage Used</h3>
               <div className="flex items-center">
                 <div className="text-xl font-bold mr-2">
                   {percentageUsed}%
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2.5">
+                <div className="w-full rounded-full h-2.5" style={{ background: 'var(--bg-card)' }}>
                   <div
                     className={`h-2.5 rounded-full ${
                       percentageUsed > 100 ? 'bg-red-500' :
@@ -570,11 +570,11 @@ const Budget = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Add Budget Button */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold">Category Budgets</h2>
-          <button 
+          <button
             className="btn-secondary text-sm px-4 py-2 rounded-md flex items-center"
             onClick={() => setShowAddForm(true)}
           >
@@ -584,7 +584,7 @@ const Budget = () => {
             Add Budget
           </button>
         </div>
-        
+
         {/* Add Budget Form */}
         {showAddForm && (
           <div className="card p-6 mb-8">
@@ -593,10 +593,10 @@ const Budget = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="form-label">Category*</label>
-                  <select 
-                    name="category" 
-                    className="form-input" 
-                    value={newBudget.category} 
+                  <select
+                    name="category"
+                    className="form-input"
+                    value={newBudget.category}
                     onChange={handleInputChange}
                     required
                   >
@@ -609,32 +609,32 @@ const Budget = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Amount ($)*</label>
-                  <input 
-                    type="number" 
-                    name="amount" 
-                    className="form-input" 
-                    value={newBudget.amount} 
+                  <input
+                    type="number"
+                    name="amount"
+                    className="form-input"
+                    value={newBudget.amount}
                     onChange={handleInputChange}
                     placeholder="e.g. 100"
                     step="0.01"
                     min="0"
                     required
                   />
-                  <small className="text-gray-400 mt-1 block">
+                  <small className="t-secondary mt-1 block">
                     Enter the dollar amount directly (e.g. 100 for $100)
                   </small>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Month & Year</label>
                   <div className="flex space-x-2">
-                    <select 
-                      name="month" 
-                      className="form-input" 
-                      value={newBudget.month} 
+                    <select
+                      name="month"
+                      className="form-input"
+                      value={newBudget.month}
                       onChange={handleInputChange}
                       required
                     >
@@ -651,10 +651,10 @@ const Budget = () => {
                       <option value="11">November</option>
                       <option value="12">December</option>
                     </select>
-                    <select 
-                      name="year" 
-                      className="form-input" 
-                      value={newBudget.year} 
+                    <select
+                      name="year"
+                      className="form-input"
+                      value={newBudget.year}
                       onChange={handleInputChange}
                       required
                     >
@@ -665,11 +665,11 @@ const Budget = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => setShowAddForm(false)}
                 >
                   Cancel
@@ -685,7 +685,7 @@ const Budget = () => {
             </form>
           </div>
         )}
-        
+
         {/* Edit Budget Form */}
         {showEditForm && (
           <div className="card p-6 mb-8">
@@ -694,10 +694,10 @@ const Budget = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="form-label">Category*</label>
-                  <select 
-                    name="category" 
-                    className="form-input" 
-                    value={newBudget.category} 
+                  <select
+                    name="category"
+                    className="form-input"
+                    value={newBudget.category}
                     onChange={handleInputChange}
                     required
                   >
@@ -710,32 +710,32 @@ const Budget = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Amount ($)*</label>
-                  <input 
-                    type="number" 
-                    name="amount" 
-                    className="form-input" 
-                    value={newBudget.amount} 
+                  <input
+                    type="number"
+                    name="amount"
+                    className="form-input"
+                    value={newBudget.amount}
                     onChange={handleInputChange}
                     placeholder="e.g. 100"
                     step="0.01"
                     min="0"
                     required
                   />
-                  <small className="text-gray-400 mt-1 block">
+                  <small className="t-secondary mt-1 block">
                     Enter the dollar amount directly (e.g. 100 for $100)
                   </small>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Month & Year</label>
                   <div className="flex space-x-2">
-                    <select 
-                      name="month" 
-                      className="form-input" 
-                      value={newBudget.month} 
+                    <select
+                      name="month"
+                      className="form-input"
+                      value={newBudget.month}
                       onChange={handleInputChange}
                       required
                     >
@@ -752,10 +752,10 @@ const Budget = () => {
                       <option value="11">November</option>
                       <option value="12">December</option>
                     </select>
-                    <select 
-                      name="year" 
-                      className="form-input" 
-                      value={newBudget.year} 
+                    <select
+                      name="year"
+                      className="form-input"
+                      value={newBudget.year}
                       onChange={handleInputChange}
                       required
                     >
@@ -766,11 +766,11 @@ const Budget = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => {
                     setShowEditForm(false);
                     setEditingBudgetId(null);
@@ -796,7 +796,7 @@ const Budget = () => {
             </form>
           </div>
         )}
-        
+
         {/* Budget Categories */}
         {loading ? (
           <div className="text-center py-12">
@@ -804,18 +804,18 @@ const Budget = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-3 text-gray-400">Loading budget data...</p>
+            <p className="mt-3 t-secondary">Loading budget data...</p>
           </div>
         ) : budgets.length === 0 ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No budgets found</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="t-secondary mb-6">
               You have not set any budgets for {getMonthName(currentMonth)} {currentYear}
             </p>
-            <button 
+            <button
               className="btn-secondary px-4 py-2 rounded-md"
               onClick={() => setShowAddForm(true)}
             >
@@ -828,12 +828,12 @@ const Budget = () => {
               const spentAmount = getSpentByCategory(budget.category);
               const percentageSpent = getPercentageSpent(budget);
               const overBudget = isOverBudget(budget);
-              
+
               return (
                 <div key={budget.id} className="card p-4">
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
                     <div className="flex items-center">
-                      <div className="p-2 rounded-full bg-gray-700 mr-3">
+                      <div className="p-2 rounded-full mr-3" style={{ background: 'var(--bg-card)' }}>
                         {getCategoryIcon(budget.category)}
                       </div>
                       <div>
@@ -842,26 +842,26 @@ const Budget = () => {
                         </h3>
                       </div>
                     </div>
-                    
+
                     <div>
-                      <div className="text-xs text-gray-400">Budget</div>
+                      <div className="text-xs t-secondary">Budget</div>
                       <div className="font-medium">{formatCurrency(budget.amount)}</div>
                     </div>
-                    
+
                     <div>
-                      <div className="text-xs text-gray-400">Spent</div>
+                      <div className="text-xs t-secondary">Spent</div>
                       <div className={`font-medium ${overBudget ? 'text-red-500' : ''}`}>
                         {formatCurrency(spentAmount)}
                       </div>
                     </div>
-                    
+
                     <div className="col-span-1 md:col-span-2">
                       <div className="flex items-center">
                         <div className="text-xs mr-2 w-10">
                           {percentageSpent}%
                         </div>
                         <div className="flex-grow">
-                          <div className="w-full bg-gray-700 rounded-full h-2.5">
+                          <div className="w-full rounded-full h-2.5" style={{ background: 'var(--bg-card)' }}>
                             <div
                               className={`h-2.5 rounded-full ${getStatusColor(percentageSpent, overBudget)}`}
                               style={{ width: `${percentageSpent}%` }}
@@ -869,8 +869,8 @@ const Budget = () => {
                           </div>
                         </div>
                         <div className="flex ml-4">
-                          <button 
-                            className="text-gray-400 hover:text-gray-300 p-1 rounded mr-1" 
+                          <button
+                            className="t-secondary hover:text-gray-300 p-1 rounded mr-1"
                             title="Edit"
                             onClick={() => handleEdit(budget)}
                           >
@@ -878,8 +878,8 @@ const Budget = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                             </svg>
                           </button>
-                          <button 
-                            className="text-red-500 hover:text-red-400 p-1 rounded" 
+                          <button
+                            className="text-red-500 hover:text-red-400 p-1 rounded"
                             title="Delete"
                             onClick={() => handleDelete(budget.id)}
                           >
@@ -896,23 +896,23 @@ const Budget = () => {
             })}
           </div>
         )}
-        
+
         {/* Monthly Breakdown */}
         <div className="mt-12">
           <h2 className="text-lg font-semibold mb-6">Monthly Comparison</h2>
-          
+
           <div className="card p-6">
-            <div className="text-center text-gray-400 mb-4">
+            <div className="text-center t-secondary mb-4">
               Monthly budget vs. spending breakdown
             </div>
-            
+
             <div className="h-64 flex items-center justify-center">
               <div className="text-center">
-                <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
                 <p>Chart functionality coming soon</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm t-muted mt-2">
                   View your budget history and spending trends
                 </p>
               </div>

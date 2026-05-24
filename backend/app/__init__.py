@@ -119,7 +119,13 @@ def create_app(config_class=Config):
     @app.route('/health', methods=['GET'])
     def health_check():
         """Health check endpoint for container orchestration"""
-        return jsonify({"status": "healthy"}), 200
+        return jsonify({
+            "status": "healthy",
+            "app": "propertyPal",
+            "server_type": "core",
+            "version": "1.0.0",
+            "db": "ok",
+        }), 200
 
 
 
@@ -136,6 +142,7 @@ def create_app(config_class=Config):
     from app.api.users import users_bp
     from app.api.settings import settings_bp
     from app.api.integrations import integrations_bp
+    from app.api.modules import modules_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(properties_bp, url_prefix='/api/properties')
@@ -149,6 +156,7 @@ def create_app(config_class=Config):
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
     app.register_blueprint(integrations_bp, url_prefix='/api/integrations')
+    app.register_blueprint(modules_bp, url_prefix='/api/modules')
 
     # Auto-seed demo accounts if DEMO_MODE is enabled
     with app.app_context():

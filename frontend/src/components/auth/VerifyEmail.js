@@ -70,12 +70,12 @@ const VerifyEmail = () => {
         {verifying ? (
           <div className="text-center py-8">
             <div className="animate-spin h-10 w-10 border-4 border-sky-400 border-opacity-50 rounded-full border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-400">Verifying your email address...</p>
+            <p className="t-secondary">Verifying your email address...</p>
           </div>
         ) : (
           <>
             {error && (
-              <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+              <div className="alert-error mb-6">
                 {error}
                 <div className="mt-4">
                   <button
@@ -90,7 +90,7 @@ const VerifyEmail = () => {
             )}
             
             {message && (
-              <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+              <div className="alert-success mb-6">
                 {message}
                 <p className="mt-2 text-sm">Redirecting to login page in a few seconds...</p>
               </div>

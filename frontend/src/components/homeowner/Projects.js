@@ -31,35 +31,35 @@ const Projects = () => {
   useEffect(() => {
     const userString = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
-    
+
     if (!userString || !token) {
       navigate('/login');
       return;
     }
-    
+
     setUser(JSON.parse(userString));
-    
+
     // Get current property from localStorage or fetch first property
     const fetchProperties = async () => {
       try {
         const fetchedProperties = await apiHelpers.get('properties/');
-        
+
         if (fetchedProperties && fetchedProperties.length > 0) {
           // Get current property from localStorage or use the first one
           const savedPropertyId = localStorage.getItem('currentPropertyId');
           let propertyToUse;
-          
+
           if (savedPropertyId) {
             propertyToUse = fetchedProperties.find(p => p.id.toString() === savedPropertyId);
           }
-          
+
           // If no saved property or saved property not found, use first property
           if (!propertyToUse) {
             propertyToUse = fetchedProperties[0];
           }
-          
+
           setCurrentProperty(propertyToUse);
-          
+
           // Fetch projects for the selected property
           if (propertyToUse) {
             fetchProjectsForProperty(propertyToUse.id);
@@ -71,17 +71,17 @@ const Projects = () => {
         setLoading(false);
       }
     };
-    
+
     fetchProperties();
   }, [navigate]);
 
   // Handle property selection from dropdown
   const handleSelectProperty = (property) => {
     setCurrentProperty(property);
-    
+
     // Save to localStorage
     localStorage.setItem('currentPropertyId', property.id);
-    
+
     // Fetch projects for the selected property
     fetchProjectsForProperty(property.id);
   };
@@ -91,11 +91,11 @@ const Projects = () => {
     try {
       setLoading(true);
       console.log(`Fetching projects for property ID: ${propertyId}`);
-      
+
       const response = await apiHelpers.get('projects/', { property_id: propertyId });
-      
+
       console.log('Projects API response:', response);
-      
+
       // Always use the API response data
       setProjects(response || []);
       setLoading(false);
@@ -111,7 +111,7 @@ const Projects = () => {
   // Handle input changes for project form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Convert numeric values to numbers
     if (name === 'budget' || name === 'spent') {
       setNewProject({
@@ -129,22 +129,22 @@ const Projects = () => {
   // Handle form submission for new project
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError('');
-      
+
       // Add current property ID to the project data
       const projectData = {
         ...newProject,
         property_id: currentProperty.id
       };
-      
+
       console.log('Sending project data:', projectData);
-      
+
       // API call to add project
       await apiHelpers.post('projects/', projectData);
-      
+
       // Reset form
       setNewProject({
         name: '',
@@ -156,10 +156,10 @@ const Projects = () => {
         projected_end_date: '',
         property_id: ''
       });
-      
+
       setShowAddForm(false);
       setMessage('Project added successfully!');
-      
+
       // Reload projects
       if (currentProperty) {
         fetchProjectsForProperty(currentProperty.id);
@@ -190,20 +190,20 @@ const Projects = () => {
   // Handle update form submission
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError('');
-      
+
       // Ensure property_id is set
       const projectData = {
         ...newProject,
         property_id: currentProperty.id
       };
-      
+
       // API call to update project
       await apiHelpers.put(`projects/${editingProjectId}`, projectData);
-      
+
       // Reset form
       setNewProject({
         name: '',
@@ -215,11 +215,11 @@ const Projects = () => {
         projected_end_date: '',
         property_id: ''
       });
-      
+
       setShowEditForm(false);
       setEditingProjectId(null);
       setMessage('Project updated successfully!');
-      
+
       // Reload projects
       if (currentProperty) {
         fetchProjectsForProperty(currentProperty.id);
@@ -238,9 +238,9 @@ const Projects = () => {
         setLoading(true);
         // API call to delete project
         await apiHelpers.delete(`projects/${id}`);
-        
+
         setMessage('Project deleted successfully!');
-        
+
         // Reload projects
         if (currentProperty) {
           fetchProjectsForProperty(currentProperty.id);
@@ -259,9 +259,9 @@ const Projects = () => {
       setLoading(true);
       // API call to update project status
       await apiHelpers.put(`projects/${id}`, { status: newStatus });
-      
+
       setMessage(`Project status updated to ${newStatus}!`);
-      
+
       // Reload projects
       if (currentProperty) {
         fetchProjectsForProperty(currentProperty.id);
@@ -292,7 +292,7 @@ const Projects = () => {
   const getProgressPercentage = (project) => {
     if (project.status === 'completed') return 100;
     if (!project.budget || project.budget === 0) return 0;
-    
+
     // Calculate based on spent vs budget
     const percentage = (project.spent / project.budget) * 100;
     return Math.min(percentage, 100); // Cap at 100%
@@ -308,15 +308,17 @@ const Projects = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'planning':
-        return 'bg-blue-900 text-blue-300 bg-opacity-30';
+        return 'badge badge-neutral';
       case 'in-progress':
-        return 'bg-sky-900 text-sky-200 bg-opacity-30';
+        return 'badge badge-brand';
       case 'on-hold':
-        return 'bg-yellow-900 text-yellow-300 bg-opacity-30';
+        return 'badge badge-warning';
       case 'completed':
-        return 'bg-gray-700 text-gray-300';
+        return 'badge badge-success';
+      case 'cancelled':
+        return 'badge badge-overdue';
       default:
-        return 'bg-gray-700 text-gray-300';
+        return 'badge badge-neutral';
     }
   };
 
@@ -339,11 +341,11 @@ const Projects = () => {
   // Get status action buttons
   const getStatusActions = (project) => {
     const actions = [];
-    
+
     // Edit button is always available
     actions.push(
-      <button 
-        key="edit" 
+      <button
+        key="edit"
         className="text-blue-500 hover:text-blue-400 text-sm"
         onClick={() => handleEdit(project)}
       >
@@ -354,8 +356,8 @@ const Projects = () => {
     // Add conditional status change buttons
     if (project.status === 'planning') {
       actions.push(
-        <button 
-          key="start" 
+        <button
+          key="start"
           className="text-sky-400 hover:text-sky-300 text-sm ml-2"
           onClick={() => handleStatusChange(project.id, 'in-progress')}
         >
@@ -364,8 +366,8 @@ const Projects = () => {
       );
     } else if (project.status === 'in-progress') {
       actions.push(
-        <button 
-          key="complete" 
+        <button
+          key="complete"
           className="text-green-500 hover:text-green-400 text-sm ml-2"
           onClick={() => handleStatusChange(project.id, 'completed')}
         >
@@ -373,8 +375,8 @@ const Projects = () => {
         </button>
       );
       actions.push(
-        <button 
-          key="hold" 
+        <button
+          key="hold"
           className="text-yellow-500 hover:text-yellow-400 text-sm ml-2"
           onClick={() => handleStatusChange(project.id, 'on-hold')}
         >
@@ -383,8 +385,8 @@ const Projects = () => {
       );
     } else if (project.status === 'on-hold') {
       actions.push(
-        <button 
-          key="resume" 
+        <button
+          key="resume"
           className="text-sky-400 hover:text-sky-300 text-sm ml-2"
           onClick={() => handleStatusChange(project.id, 'in-progress')}
         >
@@ -392,7 +394,7 @@ const Projects = () => {
         </button>
       );
     }
-    
+
     return actions;
   };
 
@@ -402,11 +404,11 @@ const Projects = () => {
         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
           <div>
             <h1 className="text-2xl font-bold">Home Projects</h1>
-            <p className="text-gray-400 mt-1">Manage your home improvement projects</p>
+            <p className="t-secondary mt-1">Manage your home improvement projects</p>
           </div>
-          
+
           <div className="mt-4 md:mt-0 flex items-center gap-4">
-            <button 
+            <button
               className="btn-secondary text-sm px-4 py-2 rounded-md flex items-center"
               onClick={() => setShowAddForm(true)}
             >
@@ -417,65 +419,65 @@ const Projects = () => {
             </button>
           </div>
         </div>
-        
+
         {/* Error and message display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+          <div className="alert-error mb-6">
             {error}
           </div>
         )}
-        
+
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+          <div className="alert-success mb-6">
             {message}
           </div>
         )}
-        
+
         {/* Filters and search */}
         <div className="flex flex-col md:flex-row justify-between mb-6">
           <div className="flex overflow-x-auto pb-2 mb-4 md:mb-0">
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'all' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'all' ? ' active' : ''}`}
               onClick={() => setFilter('all')}
             >
               All Projects
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'planning' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'planning' ? ' active' : ''}`}
               onClick={() => setFilter('planning')}
             >
               Planning
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'in-progress' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'in-progress' ? ' active' : ''}`}
               onClick={() => setFilter('in-progress')}
             >
               In Progress
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'on-hold' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'on-hold' ? ' active' : ''}`}
               onClick={() => setFilter('on-hold')}
             >
               On Hold
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'completed' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2${filter === 'completed' ? ' active' : ''}`}
               onClick={() => setFilter('completed')}
             >
               Completed
             </button>
           </div>
-          
+
           <div className="relative flex items-center">
             <input
               type="text"
               className="form-input w-full md:w-64 py-2 pl-10"
-              placeholder="Search projects..."
+              placeholder=""
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <svg
-              className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+              className="h-5 w-5 t-muted absolute left-3 top-1/2 transform -translate-y-1/2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -484,7 +486,7 @@ const Projects = () => {
             </svg>
           </div>
         </div>
-        
+
         {/* Add Project Form */}
         {showAddForm && (
           <div className="card p-6 mb-8">
@@ -493,35 +495,35 @@ const Projects = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="form-label">Project Name*</label>
-                  <input 
-                    type="text" 
-                    name="name" 
-                    className="form-input" 
-                    value={newProject.name} 
+                  <input
+                    type="text"
+                    name="name"
+                    className="form-input"
+                    value={newProject.name}
                     onChange={handleInputChange}
                     placeholder="e.g. Kitchen Remodel"
                     required
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="form-label">Description</label>
-                  <textarea 
-                    name="description" 
-                    className="form-input" 
-                    value={newProject.description} 
+                  <textarea
+                    name="description"
+                    className="form-input"
+                    value={newProject.description}
                     onChange={handleInputChange}
                     placeholder="Describe your project, goals, and details"
                     rows="3"
                   ></textarea>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Status*</label>
-                  <select 
-                    name="status" 
-                    className="form-input" 
-                    value={newProject.status} 
+                  <select
+                    name="status"
+                    className="form-input"
+                    value={newProject.status}
                     onChange={handleInputChange}
                     required
                   >
@@ -531,62 +533,62 @@ const Projects = () => {
                     <option value="completed">Completed</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Budget ($)</label>
-                  <input 
-                    type="number" 
-                    name="budget" 
-                    className="form-input" 
-                    value={newProject.budget} 
+                  <input
+                    type="number"
+                    name="budget"
+                    className="form-input"
+                    value={newProject.budget}
                     onChange={handleInputChange}
                     placeholder="e.g. 5000"
                     min="0"
                     step="1"
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Spent So Far ($)</label>
-                  <input 
-                    type="number" 
-                    name="spent" 
-                    className="form-input" 
-                    value={newProject.spent} 
+                  <input
+                    type="number"
+                    name="spent"
+                    className="form-input"
+                    value={newProject.spent}
                     onChange={handleInputChange}
                     placeholder="e.g. 1000"
                     min="0"
                     step="1"
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Start Date</label>
-                  <input 
-                    type="date" 
-                    name="start_date" 
-                    className="form-input" 
-                    value={newProject.start_date} 
+                  <input
+                    type="date"
+                    name="start_date"
+                    className="form-input"
+                    value={newProject.start_date}
                     onChange={handleInputChange}
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Projected End Date</label>
-                  <input 
-                    type="date" 
-                    name="projected_end_date" 
-                    className="form-input" 
-                    value={newProject.projected_end_date} 
+                  <input
+                    type="date"
+                    name="projected_end_date"
+                    className="form-input"
+                    value={newProject.projected_end_date}
                     onChange={handleInputChange}
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => setShowAddForm(false)}
                 >
                   Cancel
@@ -602,7 +604,7 @@ const Projects = () => {
             </form>
           </div>
         )}
-        
+
         {/* Edit Project Form */}
         {showEditForm && (
           <div className="card p-6 mb-8">
@@ -611,35 +613,35 @@ const Projects = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="form-label">Project Name*</label>
-                  <input 
-                    type="text" 
-                    name="name" 
-                    className="form-input" 
-                    value={newProject.name} 
+                  <input
+                    type="text"
+                    name="name"
+                    className="form-input"
+                    value={newProject.name}
                     onChange={handleInputChange}
                     placeholder="e.g. Kitchen Remodel"
                     required
                   />
                 </div>
-                
+
                 <div className="md:col-span-2">
                   <label className="form-label">Description</label>
-                  <textarea 
-                    name="description" 
-                    className="form-input" 
-                    value={newProject.description} 
+                  <textarea
+                    name="description"
+                    className="form-input"
+                    value={newProject.description}
                     onChange={handleInputChange}
                     placeholder="Describe your project, goals, and details"
                     rows="3"
                   ></textarea>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Status*</label>
-                  <select 
-                    name="status" 
-                    className="form-input" 
-                    value={newProject.status} 
+                  <select
+                    name="status"
+                    className="form-input"
+                    value={newProject.status}
                     onChange={handleInputChange}
                     required
                   >
@@ -649,62 +651,62 @@ const Projects = () => {
                     <option value="completed">Completed</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Budget ($)</label>
-                  <input 
-                    type="number" 
-                    name="budget" 
-                    className="form-input" 
-                    value={newProject.budget} 
+                  <input
+                    type="number"
+                    name="budget"
+                    className="form-input"
+                    value={newProject.budget}
                     onChange={handleInputChange}
                     placeholder="e.g. 5000"
                     min="0"
                     step="1"
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Spent So Far ($)</label>
-                  <input 
-                    type="number" 
-                    name="spent" 
-                    className="form-input" 
-                    value={newProject.spent} 
+                  <input
+                    type="number"
+                    name="spent"
+                    className="form-input"
+                    value={newProject.spent}
                     onChange={handleInputChange}
                     placeholder="e.g. 1000"
                     min="0"
                     step="1"
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Start Date</label>
-                  <input 
-                    type="date" 
-                    name="start_date" 
-                    className="form-input" 
-                    value={newProject.start_date} 
+                  <input
+                    type="date"
+                    name="start_date"
+                    className="form-input"
+                    value={newProject.start_date}
                     onChange={handleInputChange}
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Projected End Date</label>
-                  <input 
-                    type="date" 
-                    name="projected_end_date" 
-                    className="form-input" 
-                    value={newProject.projected_end_date} 
+                  <input
+                    type="date"
+                    name="projected_end_date"
+                    className="form-input"
+                    value={newProject.projected_end_date}
                     onChange={handleInputChange}
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => {
                     setShowEditForm(false);
                     setEditingProjectId(null);
@@ -733,7 +735,7 @@ const Projects = () => {
             </form>
           </div>
         )}
-        
+
         {/* Projects List */}
         {loading ? (
           <div className="text-center py-12">
@@ -741,28 +743,28 @@ const Projects = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-3 text-gray-400">Loading projects...</p>
+            <p className="mt-3 t-secondary">Loading projects...</p>
           </div>
         ) : !currentProperty ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No Property Selected</h3>
-            <p className="text-gray-400 mb-6">Please select a property to view its projects</p>
+            <p className="t-secondary mb-6">Please select a property to view its projects</p>
           </div>
         ) : searchedProjects.length === 0 ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No projects found</h3>
-            <p className="text-gray-400 mb-6">
-              {searchTerm ? `No results for "${searchTerm}"` : 
-               filter !== 'all' ? `No ${filter} projects found` : 
+            <p className="t-secondary mb-6">
+              {searchTerm ? `No results for "${searchTerm}"` :
+               filter !== 'all' ? `No ${filter} projects found` :
                `You have not added any projects for ${currentProperty.address} yet`}
             </p>
-            <button 
+            <button
               className="btn-secondary px-4 py-2 rounded-md"
               onClick={() => setShowAddForm(true)}
             >
@@ -775,33 +777,33 @@ const Projects = () => {
               <div key={project.id} className="card p-6">
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="text-md font-medium">{project.name}</h4>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(project.status)}`}>
-                    {project.status === 'in-progress' ? 'In Progress' : 
-                     project.status === 'on-hold' ? 'On Hold' : 
+                  <span className={getStatusBadge(project.status)}>
+                    {project.status === 'in-progress' ? 'In Progress' :
+                     project.status === 'on-hold' ? 'On Hold' :
                      project.status.charAt(0).toUpperCase() + project.status.slice(1)}
                   </span>
                 </div>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm t-secondary mb-4">
                   {project.description}
                 </p>
-                <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                  <div 
-                    className={`${getProgressBarColor(project.status)} h-2 rounded-full`} 
+                <div className="w-full rounded-full h-2 mb-2" style={{ background: 'var(--bg-card-hover)' }}>
+                  <div
+                    className={`${getProgressBarColor(project.status)} h-2 rounded-full`}
                     style={{ width: `${getProgressPercentage(project)}%` }}
                   ></div>
                 </div>
-                <div className="flex justify-between text-xs text-gray-400">
+                <div className="flex justify-between text-xs t-secondary">
                   <span>Budget: {formatCurrency(project.budget)}</span>
                   <span>Spent: {formatCurrency(project.spent)}</span>
                 </div>
-                
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <div className="flex justify-between text-xs text-gray-400 mb-4">
+
+                <div className="mt-4 pt-4 border-t border-themed">
+                  <div className="flex justify-between text-xs t-secondary mb-4">
                     <span>
                       {project.start_date ? `Start: ${new Date(project.start_date).toLocaleDateString()}` : 'Not started'}
                     </span>
                     <span>
-                      {project.status === 'completed' && project.projected_end_date 
+                      {project.status === 'completed' && project.projected_end_date
                         ? `Completed: ${new Date(project.projected_end_date).toLocaleDateString()}`
                         : project.projected_end_date
                           ? `End: ${new Date(project.projected_end_date).toLocaleDateString()}`
@@ -812,7 +814,7 @@ const Projects = () => {
                     <div className="flex space-x-2">
                       {getStatusActions(project)}
                     </div>
-                    <button 
+                    <button
                       className="text-red-500 hover:text-red-400 text-sm"
                       onClick={() => handleDelete(project.id)}
                     >
@@ -824,17 +826,17 @@ const Projects = () => {
             ))}
           </div>
         )}
-        
+
         {/* Project Ideas Section */}
         <div className="mt-12">
           <h2 className="text-xl font-semibold mb-6">Home Project Ideas</h2>
-          
+
           <div className="card p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="p-4 bg-gray-800 rounded-lg">
+              <div className="p-4 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                 <h3 className="font-medium mb-2">Energy Efficiency Upgrades</h3>
-                <p className="text-sm text-gray-400">Install energy-efficient windows, add insulation, or update HVAC system to reduce utility bills.</p>
-                <button 
+                <p className="text-sm t-secondary">Install energy-efficient windows, add insulation, or update HVAC system to reduce utility bills.</p>
+                <button
                   className="mt-4 text-sky-400 hover:text-sky-300 text-sm"
                   onClick={() => {
                     setNewProject({
@@ -849,11 +851,11 @@ const Projects = () => {
                   Create Project
                 </button>
               </div>
-              
-              <div className="p-4 bg-gray-800 rounded-lg">
+
+              <div className="p-4 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                 <h3 className="font-medium mb-2">Home Office Renovation</h3>
-                <p className="text-sm text-gray-400">Transform a spare room into a functional work-from-home space with proper lighting and storage.</p>
-                <button 
+                <p className="text-sm t-secondary">Transform a spare room into a functional work-from-home space with proper lighting and storage.</p>
+                <button
                   className="mt-4 text-sky-400 hover:text-sky-300 text-sm"
                   onClick={() => {
                     setNewProject({
@@ -868,11 +870,11 @@ const Projects = () => {
                   Create Project
                 </button>
               </div>
-              
-              <div className="p-4 bg-gray-800 rounded-lg">
+
+              <div className="p-4 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                 <h3 className="font-medium mb-2">Smart Home Upgrades</h3>
-                <p className="text-sm text-gray-400">Install smart thermostats, lighting, security cameras, and home automation systems.</p>
-                <button 
+                <p className="text-sm t-secondary">Install smart thermostats, lighting, security cameras, and home automation systems.</p>
+                <button
                   className="mt-4 text-sky-400 hover:text-sky-300 text-sm"
                   onClick={() => {
                     setNewProject({

@@ -1,0 +1,152 @@
+# =============================================================================
+# propertyPal Core — Portainer Stack (Plug-and-Play)
+# =============================================================================
+# Drop this file directly into Portainer → Stacks → Add Stack → Web editor.
+#
+# BEFORE DEPLOYING:
+#   1. Replace every  CHANGEME  value with your own secret.
+#      - DB_PASSWORD    → any strong password
+#      - SECRET_KEY     → run: openssl rand -hex 32
+#      - JWT_SECRET_KEY → run: openssl rand -hex 32
+#   2. Optional env vars (SMTP, FRONTEND_URL) can be left blank —
+#      features that need them will be disabled at runtime.
+#   3. SKIP_EMAIL_VERIFICATION is true by default so first-time setup
+#      works without an SMTP server. Set to false once email is configured.
+#
+# IMAGE TAGS
+#   All images are pulled from ghcr.io/palstack-io automatically.
+#   No local build step required.
+#
+# PORT
+#   The app is exposed on port 80 by default.
+#   Change the left side of the nginx ports mapping if port 80 is taken,
+#   e.g. "8090:80".
+# =============================================================================
+
+services:
+
+  # ===========================================================================
+  # PostgreSQL Database
+  # ===========================================================================
+  db:
+    image: postgres:15-alpine
+    container_name: propertypal-db
+    environment:
+      POSTGRES_DB: propertypal
+      POSTGRES_USER: propertypal
+      POSTGRES_PASSWORD: CHANGEME_DB_PASSWORD    # ← required
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - propertypal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U propertypal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # Backend API (Flask)
+  # Auth: JWT, email verification, property invitation auto-link at signup
+  # ===========================================================================
+  backend:
+    image: ghcr.io/palstack-io/propertypal-backend:latest
+    container_name: propertypal-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # ── Database ──────────────────────────────────────────────────────────
+      DATABASE_HOST: db
+      DATABASE_PORT: "5432"
+      POSTGRES_USER: propertypal
+      POSTGRES_PASSWORD: CHANGEME_DB_PASSWORD    # ← must match db above
+      POSTGRES_DB: propertypal
+
+      # ── Flask / Security ───────────────────────────────────────────────────
+      FLASK_ENV: production
+      FLASK_APP: run.py
+      DEBUG: "false"
+      IN_DOCKER: "true"
+      SECRET_KEY: CHANGEME_run_openssl_rand_hex_32      # ← required
+      JWT_SECRET_KEY: CHANGEME_run_openssl_rand_hex_32  # ← required (can be different)
+
+      # ── CORS ──────────────────────────────────────────────────────────────
+      CORS_ALLOWED_ORIGINS: http://localhost,http://localhost:80  # add your domain if needed
+
+      # ── Frontend URL (used in invitation emails) ───────────────────────────
+      FRONTEND_URL: http://localhost    # ← set to your public URL
+
+      # ── Email Verification ────────────────────────────────────────────────
+      # Set to false once SMTP is configured — required for invitation links
+      SKIP_EMAIL_VERIFICATION: "true"
+
+      # ── Email / SMTP (leave blank to disable email features) ──────────────
+      MAIL_SERVER: smtp.gmail.com
+      MAIL_PORT: "587"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_DEFAULT_SENDER: noreply@propertypal.com
+
+      # ── Demo Mode (optional) ──────────────────────────────────────────────
+      DEMO_MODE: "false"
+    volumes:
+      - app_uploads:/app/uploads
+    expose:
+      - "5008"
+    networks:
+      - propertypal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===========================================================================
+  # React Frontend
+  # ===========================================================================
+  frontend:
+    image: ghcr.io/palstack-io/propertypal-frontend:latest
+    container_name: propertypal-frontend
+    depends_on:
+      - backend
+    expose:
+      - "3000"
+    networks:
+      - propertypal-network
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Nginx — reverse proxy + single public entry point on port 80
+  # Serves frontend, proxies /api → backend, serves /uploads
+  # ===========================================================================
+  nginx:
+    image: ghcr.io/palstack-io/propertypal-nginx:latest
+    container_name: propertypal-nginx
+    ports:
+      - "80:80"    # change left side (e.g. "8090:80") if port 80 is taken
+    volumes:
+      - app_uploads:/app/uploads:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - propertypal-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# =============================================================================
+networks:
+  propertypal-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  app_uploads:

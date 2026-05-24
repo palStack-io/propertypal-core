@@ -16,18 +16,18 @@ const Reports = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  
+
   // Report parameters
   const [reportType, setReportType] = useState('monthly');
   const [startDate, setStartDate] = useState(new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportCategory, setReportCategory] = useState('all');
-  
+
   // Report data
   const [categoryTotals, setCategoryTotals] = useState({});
   const [savingsRate, setSavingsRate] = useState(0);
   const [expenseGrowthRate, setExpenseGrowthRate] = useState(0);
-  
+
   // Chart colors for different categories
   const COLORS = {
     utilities: '#3182CE', // blue
@@ -133,35 +133,35 @@ const Reports = () => {
   useEffect(() => {
     const userString = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
-    
+
     if (!userString || !token) {
       navigate('/login');
       return;
     }
-    
+
     setUser(JSON.parse(userString));
-    
+
     // Get current property from localStorage or fetch first property
     const fetchProperties = async () => {
       try {
         const fetchedProperties = await apiHelpers.get('properties/');
-        
+
         if (fetchedProperties && fetchedProperties.length > 0) {
           // Get current property from localStorage or use the first one
           const savedPropertyId = localStorage.getItem('currentPropertyId');
           let propertyToUse;
-          
+
           if (savedPropertyId) {
             propertyToUse = fetchedProperties.find(p => p.id.toString() === savedPropertyId);
           }
-          
+
           // If no saved property or saved property not found, use first property
           if (!propertyToUse) {
             propertyToUse = fetchedProperties[0];
           }
-          
+
           setCurrentProperty(propertyToUse);
-          
+
           // Fetch expenses and budgets for the selected property
           if (propertyToUse) {
             fetchExpenses(propertyToUse.id);
@@ -181,10 +181,10 @@ const Reports = () => {
   // Handle property selection from dropdown
   const handleSelectProperty = (property) => {
     setCurrentProperty(property);
-    
+
     // Save to localStorage
     localStorage.setItem('currentPropertyId', property.id);
-    
+
     // Fetch expenses for the selected property
     fetchExpenses(property.id);
     fetchBudgets(property.id);
@@ -198,11 +198,11 @@ const Reports = () => {
     // Calculate category totals
     const categoryData = calculateCategoryTotals(expensesData);
     setCategoryTotals(categoryData);
-    
+
     // Calculate savings rate
     const totalBudget = budgetsData.reduce((sum, budget) => sum + budget.amount, 0);
     const totalExpense = expensesData.reduce((sum, expense) => sum + expense.amount, 0);
-    
+
     if (totalBudget > 0) {
       const savings = totalBudget - totalExpense;
       const savingsRateValue = (savings / totalBudget) * 100;
@@ -210,12 +210,12 @@ const Reports = () => {
     } else {
       setSavingsRate(0);
     }
-    
+
     // Calculate expense growth rate
     if (monthlyData.length > 1) {
       const firstMonth = monthlyData[0].total;
       const lastMonth = monthlyData[monthlyData.length - 1].total;
-      
+
       if (firstMonth > 0) {
         const growth = ((lastMonth - firstMonth) / firstMonth) * 100;
         setExpenseGrowthRate(growth);
@@ -230,11 +230,11 @@ const Reports = () => {
   // Calculate monthly totals
   const calculateMonthlyTotals = (expensesData) => {
     const monthlyMap = {};
-    
+
     expensesData.forEach(expense => {
       const date = new Date(expense.date);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
+
       if (!monthlyMap[monthKey]) {
         monthlyMap[monthKey] = {
           month: monthKey,
@@ -242,10 +242,10 @@ const Reports = () => {
           total: 0
         };
       }
-      
+
       monthlyMap[monthKey].total += expense.amount;
     });
-    
+
     // Convert to array and sort by month
     return Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
   };
@@ -253,15 +253,15 @@ const Reports = () => {
   // Calculate category totals
   const calculateCategoryTotals = (expensesData) => {
     const categoryMap = {};
-    
+
     expensesData.forEach(expense => {
       if (!categoryMap[expense.category]) {
         categoryMap[expense.category] = 0;
       }
-      
+
       categoryMap[expense.category] += expense.amount;
     });
-    
+
     return categoryMap;
   };
 
@@ -269,7 +269,7 @@ const Reports = () => {
   const getBudgetsForDateRange = (startDateStr, endDateStr) => {
     const start = new Date(startDateStr);
     const end = new Date(endDateStr);
-    
+
     return budgets.filter(budget => {
       const budgetDate = new Date(budget.year, budget.month - 1, 1);
       return budgetDate >= start && budgetDate <= end;
@@ -279,7 +279,7 @@ const Reports = () => {
   // Generate report
   const generateReport = () => {
     setLoading(true);
-    
+
     // Fetch expenses with the selected parameters
     if (currentProperty) {
       fetchExpenses(currentProperty.id);
@@ -320,7 +320,7 @@ const Reports = () => {
         );
       default:
         return (
-          <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 t-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         );
@@ -368,7 +368,7 @@ const Reports = () => {
         );
       default:
         return (
-          <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 t-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
@@ -401,21 +401,21 @@ const Reports = () => {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    
+
     // Set attributes
     const reportDate = format(new Date(), 'yyyy-MM-dd');
     const propertyName = currentProperty ? currentProperty.address.replace(/\s+/g, '_') : 'property';
     const fileName = `${propertyName}_expenses_${reportDate}.csv`;
-    
+
     link.setAttribute('href', url);
     link.setAttribute('download', fileName);
     link.style.visibility = 'hidden';
-    
+
     // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     setMessage('CSV file downloaded successfully!');
   };
 
@@ -425,44 +425,44 @@ const Reports = () => {
 
     // Create a new PDF document
     const doc = new jsPDF();
-    
+
     // Add title and header info
     const reportDate = format(new Date(), 'MMMM d, yyyy');
     const propertyName = currentProperty ? currentProperty.address : 'Property';
-    
+
     doc.setFontSize(20);
     doc.text('Expense Report', 105, 15, { align: 'center' });
-    
+
     doc.setFontSize(12);
     doc.text(`Property: ${propertyName}`, 14, 25);
     doc.text(`Date: ${reportDate}`, 14, 32);
     doc.text(`Report Type: ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`, 14, 39);
-    
+
     // Add financial summary
     doc.setFontSize(14);
     doc.text('Financial Summary', 14, 50);
-    
+
     doc.setFontSize(10);
     doc.text(`Total Expenses: ${formatCurrency(calculateTotalExpenses())}`, 20, 60);
     doc.text(`Top Category: ${getTopExpenseCategory().category.charAt(0).toUpperCase() + getTopExpenseCategory().category.slice(1)} (${formatCurrency(getTopExpenseCategory().amount)})`, 20, 67);
     doc.text(`Savings Rate: ${savingsRate.toFixed(1)}%`, 20, 74);
     doc.text(`Expense Growth: ${expenseGrowthRate > 0 ? '+' : ''}${expenseGrowthRate.toFixed(1)}%`, 20, 81);
-    
+
     // Add expense details table
     doc.setFontSize(14);
     doc.text('Expense Details', 14, 95);
-    
+
     const filteredExpenses = expenses
       .filter(expense => reportCategory === 'all' || expense.category === reportCategory)
       .sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+
     const tableData = filteredExpenses.map(expense => [
       new Date(expense.date).toLocaleDateString(),
       expense.title,
       expense.category.charAt(0).toUpperCase() + expense.category.slice(1),
       formatCurrency(expense.amount)
     ]);
-    
+
     // Add table
     doc.autoTable({
       startY: 100,
@@ -472,11 +472,11 @@ const Reports = () => {
       headStyles: { fillColor: [44, 82, 130] },
       alternateRowStyles: { fillColor: [240, 240, 240] }
     });
-    
+
     // Save the PDF
     const fileName = `${propertyName.replace(/\s+/g, '_')}_expenses_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
     doc.save(fileName);
-    
+
     setMessage('PDF file downloaded successfully!');
   };
 
@@ -485,14 +485,14 @@ const Reports = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth();
-    
+
     // Generate expenses for the last 12 months
     const sampleExpenses = [];
-    
+
     for (let i = 0; i < 12; i++) {
       const month = (currentMonth - i + 12) % 12;
       const year = currentMonth - i < 0 ? currentYear - 1 : currentYear;
-      
+
       // Utilities (monthly)
       sampleExpenses.push({
         id: sampleExpenses.length + 1,
@@ -503,7 +503,7 @@ const Reports = () => {
         description: 'Monthly electricity bill',
         property_id: 1
       });
-      
+
       // Water bill (monthly)
       sampleExpenses.push({
         id: sampleExpenses.length + 1,
@@ -514,7 +514,7 @@ const Reports = () => {
         description: 'Monthly water bill',
         property_id: 1
       });
-      
+
       // Mortgage (monthly)
       sampleExpenses.push({
         id: sampleExpenses.length + 1,
@@ -525,7 +525,7 @@ const Reports = () => {
         description: 'Monthly mortgage payment',
         property_id: 1
       });
-      
+
       // Maintenance (occasional)
       if (Math.random() > 0.7) {
         sampleExpenses.push({
@@ -539,12 +539,12 @@ const Reports = () => {
         });
       }
     }
-    
+
     // Insurance (quarterly)
     for (let i = 0; i < 4; i++) {
       const month = ((currentMonth - i * 3) % 12 + 12) % 12;
       const year = (currentMonth - i * 3) < 0 ? currentYear - Math.ceil(Math.abs(currentMonth - i * 3) / 12) : currentYear;
-      
+
       sampleExpenses.push({
         id: sampleExpenses.length + 1,
         title: 'Home Insurance',
@@ -555,12 +555,12 @@ const Reports = () => {
         property_id: 1
       });
     }
-    
+
     // Property tax (semi-annual)
     for (let i = 0; i < 2; i++) {
       const month = ((currentMonth - i * 6) % 12 + 12) % 12;
       const year = (currentMonth - i * 6) < 0 ? currentYear - 1 : currentYear;
-      
+
       sampleExpenses.push({
         id: sampleExpenses.length + 1,
         title: 'Property Tax',
@@ -571,7 +571,7 @@ const Reports = () => {
         property_id: 1
       });
     }
-    
+
     // Renovation (once per year)
     sampleExpenses.push({
       id: sampleExpenses.length + 1,
@@ -582,7 +582,7 @@ const Reports = () => {
       description: 'Annual home improvement project',
       property_id: 1
     });
-    
+
     return sampleExpenses;
   };
 
@@ -591,10 +591,10 @@ const Reports = () => {
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
-    
+
     // Generate budgets for the current year
     const sampleBudgets = [];
-    
+
     // Monthly budgets for the entire year
     for (let month = 1; month <= 12; month++) {
       sampleBudgets.push({
@@ -605,7 +605,7 @@ const Reports = () => {
         year: currentYear,
         property_id: 1
       });
-      
+
       sampleBudgets.push({
         id: sampleBudgets.length + 1,
         category: 'mortgage',
@@ -614,7 +614,7 @@ const Reports = () => {
         year: currentYear,
         property_id: 1
       });
-      
+
       sampleBudgets.push({
         id: sampleBudgets.length + 1,
         category: 'maintenance',
@@ -624,11 +624,11 @@ const Reports = () => {
         property_id: 1
       });
     }
-    
+
     // Quarterly budgets for insurance
     for (let quarter = 0; quarter < 4; quarter++) {
       const month = quarter * 3 + 1;
-      
+
       sampleBudgets.push({
         id: sampleBudgets.length + 1,
         category: 'insurance',
@@ -638,11 +638,11 @@ const Reports = () => {
         property_id: 1
       });
     }
-    
+
     // Semi-annual budgets for taxes
     for (let half = 0; half < 2; half++) {
       const month = half * 6 + 1;
-      
+
       sampleBudgets.push({
         id: sampleBudgets.length + 1,
         category: 'taxes',
@@ -652,7 +652,7 @@ const Reports = () => {
         property_id: 1
       });
     }
-    
+
     // Annual budget for renovation
     sampleBudgets.push({
       id: sampleBudgets.length + 1,
@@ -662,7 +662,7 @@ const Reports = () => {
       year: currentYear,
       property_id: 1
     });
-    
+
     return sampleBudgets;
   };
 
@@ -676,10 +676,10 @@ const Reports = () => {
     if (Object.keys(categoryTotals).length === 0) {
       return { category: 'none', amount: 0 };
     }
-    
+
     const topCategory = Object.keys(categoryTotals)
       .reduce((a, b) => categoryTotals[a] > categoryTotals[b] ? a : b);
-    
+
     return {
       category: topCategory,
       amount: categoryTotals[topCategory]
@@ -702,13 +702,13 @@ const Reports = () => {
     const radius = outerRadius * 0.8;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  
+
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         fontSize={12}
       >
@@ -723,16 +723,16 @@ const Reports = () => {
         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
           <div>
             <h1 className="text-2xl font-bold">Financial Reports</h1>
-            <p className="text-gray-400 mt-1">Analyze your home expenses and budget</p>
+            <p className="t-secondary mt-1">Analyze your home expenses and budget</p>
           </div>
-          
+
         </div>
 
         {/* Error and message display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+          <div className="alert-error mb-6">
             {error}
-            <button 
+            <button
               className="float-right text-red-400 hover:text-red-300"
               onClick={() => setError('')}
             >
@@ -742,11 +742,11 @@ const Reports = () => {
             </button>
           </div>
         )}
-        
+
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+          <div className="alert-success mb-6">
             {message}
-            <button 
+            <button
               className="float-right text-green-400 hover:text-green-300"
               onClick={() => setMessage('')}
             >
@@ -756,16 +756,16 @@ const Reports = () => {
             </button>
           </div>
         )}
-        
+
         {/* Report Options */}
         <div className="card p-6 mb-8">
           <h2 className="text-lg font-semibold mb-4">Report Options</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="form-label">Report Type</label>
-              <select 
-                className="form-input" 
+              <select
+                className="form-input"
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value)}
               >
@@ -774,7 +774,7 @@ const Reports = () => {
                 <option value="custom">Custom Date Range</option>
               </select>
             </div>
-            
+
             {reportType === 'custom' && (
               <>
                 <div>
@@ -786,7 +786,7 @@ const Reports = () => {
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">End Date</label>
                   <input
@@ -798,11 +798,11 @@ const Reports = () => {
                 </div>
               </>
             )}
-            
+
             <div>
               <label className="form-label">Category</label>
-              <select 
-                className="form-input" 
+              <select
+                className="form-input"
                 value={reportCategory}
                 onChange={(e) => setReportCategory(e.target.value)}
               >
@@ -816,9 +816,9 @@ const Reports = () => {
                 <option value="other">Other</option>
               </select>
             </div>
-            
+
             <div className="md:col-span-4 flex justify-end">
-              <button 
+              <button
                 className="btn-secondary px-4 py-2 rounded-md flex items-center"
                 onClick={generateReport}
                 disabled={loading}
@@ -843,7 +843,7 @@ const Reports = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Report Summary */}
         {loading ? (
           <div className="text-center py-12">
@@ -851,15 +851,15 @@ const Reports = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-3 text-gray-400">Generating report...</p>
+            <p className="mt-3 t-secondary">Generating report...</p>
           </div>
         ) : expenses.length === 0 ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No expense data found</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="t-secondary mb-6">
               There are no expenses for the selected parameters
             </p>
           </div>
@@ -870,59 +870,59 @@ const Reports = () => {
               <div className="flex items-center mb-4">
                 {getReportIcon(reportType)}
                 <h2 className="text-lg font-semibold ml-2">
-                  {reportType === 'monthly' 
-                    ? 'Monthly Expense Report' 
-                    : reportType === 'yearly' 
-                      ? 'Yearly Expense Report' 
+                  {reportType === 'monthly'
+                    ? 'Monthly Expense Report'
+                    : reportType === 'yearly'
+                      ? 'Yearly Expense Report'
                       : 'Custom Expense Report'}
                 </h2>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-gray-800 rounded-lg p-4">
-                  <h3 className="text-sm text-gray-400 mb-1">Total Expenses</h3>
+                <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+                  <h3 className="text-sm t-secondary mb-1">Total Expenses</h3>
                   <div className="text-xl font-bold">{formatCurrency(calculateTotalExpenses())}</div>
                 </div>
-                
-                <div className="bg-gray-800 rounded-lg p-4">
-                  <h3 className="text-sm text-gray-400 mb-1">Top Category</h3>
+
+                <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+                  <h3 className="text-sm t-secondary mb-1">Top Category</h3>
                   <div className="flex items-center">
                     {getCategoryIcon(getTopExpenseCategory().category)}
                     <div className="text-xl font-bold ml-2">
-                      {getTopExpenseCategory().category.charAt(0).toUpperCase() + 
+                      {getTopExpenseCategory().category.charAt(0).toUpperCase() +
                        getTopExpenseCategory().category.slice(1)}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-400 mt-1">
+                  <div className="text-sm t-secondary mt-1">
                     {formatCurrency(getTopExpenseCategory().amount)}
                   </div>
                 </div>
-                
-                <div className="bg-gray-800 rounded-lg p-4">
-                  <h3 className="text-sm text-gray-400 mb-1">Savings Rate</h3>
+
+                <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+                  <h3 className="text-sm t-secondary mb-1">Savings Rate</h3>
                   <div className={`text-xl font-bold ${savingsRate >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {savingsRate.toFixed(1)}%
                   </div>
                 </div>
-                
-                <div className="bg-gray-800 rounded-lg p-4">
-                  <h3 className="text-sm text-gray-400 mb-1">Expense Growth</h3>
+
+                <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+                  <h3 className="text-sm t-secondary mb-1">Expense Growth</h3>
                   <div className={`text-xl font-bold ${expenseGrowthRate <= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {expenseGrowthRate > 0 ? '+' : ''}{expenseGrowthRate.toFixed(1)}%
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Monthly Breakdown Chart */}
             <div className="card p-6 mb-8">
               <h2 className="text-lg font-semibold mb-4">Expense Breakdown by Category</h2>
-              
+
               {Object.keys(categoryTotals).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Category distribution chart - UPDATED WITH ACTUAL CHART */}
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <h3 className="text-sm text-gray-400 mb-4">Category Distribution</h3>
+                  {/* Category distribution chart */}
+                  <div className="rounded-lg p-4" style={{ background: 'var(--bg-card)' }}>
+                    <h3 className="text-sm t-secondary mb-4">Category Distribution</h3>
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -940,7 +940,7 @@ const Reports = () => {
                               <Cell key={`cell-${index}`} fill={COLORS[entry.category] || '#718096'} />
                             ))}
                           </Pie>
-                          <Tooltip 
+                          <Tooltip
                             formatter={(value) => formatCurrency(value)}
                             labelFormatter={(name) => name}
                           />
@@ -949,17 +949,17 @@ const Reports = () => {
                       </ResponsiveContainer>
                     </div>
                   </div>
-                  
+
                   {/* Category breakdown table */}
                   <div>
-                    <h3 className="text-sm text-gray-400 mb-4">Category Details</h3>
-                    <div className="overflow-hidden rounded-lg bg-gray-800">
+                    <h3 className="text-sm t-secondary mb-4">Category Details</h3>
+                    <div className="overflow-hidden rounded-lg" style={{ background: 'var(--bg-card)' }}>
                       <table className="min-w-full">
                         <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Category</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">Amount</th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">% of Total</th>
+                          <tr className="border-b border-themed">
+                            <th className="px-4 py-3 text-left text-xs font-medium t-secondary uppercase">Category</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium t-secondary uppercase">Amount</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium t-secondary uppercase">% of Total</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -967,9 +967,9 @@ const Reports = () => {
                             .sort((a, b) => b[1] - a[1])
                             .map(([category, amount]) => {
                               const percentage = (amount / calculateTotalExpenses()) * 100;
-                              
+
                               return (
-                                <tr key={category} className="border-b border-gray-700">
+                                <tr key={category} className="border-b border-themed">
                                   <td className="px-4 py-3 whitespace-nowrap">
                                     <div className="flex items-center">
                                       {getCategoryIcon(category)}
@@ -993,27 +993,27 @@ const Reports = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 t-secondary">
                   No category data available
                 </div>
               )}
             </div>
-            
+
             {/* Expense Details */}
             <div className="card p-6">
               <h2 className="text-lg font-semibold mb-4">Expense Details</h2>
-              
+
               <div className="overflow-x-auto">
                 <table className="min-w-full">
-                  <thead className="bg-gray-700 bg-opacity-50">
+                  <thead style={{ background: 'var(--bg-card)' }}>
                     <tr>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase">Date</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase">Title</th>
-                      <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase">Category</th>
-                      <th className="py-3 px-4 text-right text-xs font-medium text-gray-400 uppercase">Amount</th>
+                      <th className="py-3 px-4 text-left text-xs font-medium t-secondary uppercase">Date</th>
+                      <th className="py-3 px-4 text-left text-xs font-medium t-secondary uppercase">Title</th>
+                      <th className="py-3 px-4 text-left text-xs font-medium t-secondary uppercase">Category</th>
+                      <th className="py-3 px-4 text-right text-xs font-medium t-secondary uppercase">Amount</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-700">
+                  <tbody className="divide-y border-themed">
                     {expenses
                       .filter(expense => reportCategory === 'all' || expense.category === reportCategory)
                       .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -1024,19 +1024,19 @@ const Reports = () => {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center">
-                              <div className="p-2 rounded-full bg-gray-700 mr-3">
+                              <div className="p-2 rounded-full mr-3" style={{ background: 'var(--bg-card)' }}>
                                 {getCategoryIcon(expense.category)}
                               </div>
                               <div>
                                 <div className="font-medium">{expense.title}</div>
                                 {expense.description && (
-                                  <div className="text-xs text-gray-400 truncate max-w-xs">{expense.description}</div>
+                                  <div className="text-xs t-secondary truncate max-w-xs">{expense.description}</div>
                                 )}
                               </div>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-sm whitespace-nowrap">
-                            <span className="px-2 py-1 rounded-full text-xs bg-gray-700">
+                            <span className="badge badge-neutral">
                               {expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}
                             </span>
                           </td>
@@ -1048,11 +1048,11 @@ const Reports = () => {
                   </tbody>
                 </table>
               </div>
-              
-              {/* Export buttons - UPDATED FOR FUNCTIONALITY */}
+
+              {/* Export buttons */}
               <div className="flex justify-end mt-6">
-                <button 
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2 flex items-center"
+                <button
+                  className="t-secondary px-4 py-2 mr-2 flex items-center"
                   onClick={exportToCSV}
                 >
                   <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1060,8 +1060,8 @@ const Reports = () => {
                   </svg>
                   Export CSV
                 </button>
-                <button 
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 flex items-center"
+                <button
+                  className="t-secondary px-4 py-2 flex items-center"
                   onClick={exportToPDF}
                 >
                   <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

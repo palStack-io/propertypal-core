@@ -63,18 +63,18 @@ const ResendVerificationEmail = () => {
         <h2 className="text-2xl font-semibold mb-6 text-center">Resend Verification Email</h2>
         
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-3 rounded-md mb-4">
+          <div className="alert-error mb-4">
             {error}
           </div>
         )}
         
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-3 rounded-md mb-4">
+          <div className="alert-success mb-4">
             {message}
           </div>
         )}
         
-        <p className="text-gray-400 mb-6 text-center">
+        <p className="t-secondary mb-6 text-center">
           Enter your email address and we'll send you a new verification link.
         </p>
         
@@ -103,7 +103,7 @@ const ResendVerificationEmail = () => {
           </div>
           
           <div className="mt-6 text-center">
-            <p className="text-gray-400">
+            <p className="t-secondary">
               <Link to="/login" className="text-secondary hover:text-secondary-light">
                 Back to Login
               </Link>

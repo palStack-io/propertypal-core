@@ -27,7 +27,7 @@ const Expenses = () => {
     recurring_interval: 'monthly',
     property_id: ''
   });
-  
+
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [expensesByCategory, setExpensesByCategory] = useState({});
 
@@ -36,12 +36,12 @@ const Expenses = () => {
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    
+
     const thisMonthExpenses = expensesData.filter(expense => {
       const expenseDate = new Date(expense.date);
       return expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear;
     });
-    
+
     const total = thisMonthExpenses.reduce((sum, expense) => sum + expense.amount, 0);
     setMonthlyTotal(total);
   }, []);
@@ -55,7 +55,7 @@ const Expenses = () => {
       acc[expense.category] += expense.amount;
       return acc;
     }, {});
-    
+
     setExpensesByCategory(grouped);
   }, []);
 
@@ -63,11 +63,11 @@ const Expenses = () => {
   const fetchExpenses = useCallback(async (propertyId) => {
     try {
       setLoading(true);
-      
+
       // Get date range based on filter
       const now = new Date();
       let startDate;
-      
+
       if (dateRange === 'month') {
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       } else if (dateRange === 'quarter') {
@@ -78,23 +78,23 @@ const Expenses = () => {
       } else {
         startDate = new Date(now.getFullYear() - 100, 0, 1); // Get all expenses
       }
-      
+
       const startDateStr = startDate.toISOString().split('T')[0];
-      
+
       // Use apiHelpers to fetch expenses with query parameters
       const fetchedExpenses = await apiHelpers.get('finances/expenses/', {
         property_id: propertyId,
         start_date: startDateStr
       });
-      
+
       setExpenses(fetchedExpenses || []);
-      
+
       // Calculate total for current month
       calculateMonthlyTotal(fetchedExpenses || []);
-      
+
       // Group expenses by category
       groupExpensesByCategory(fetchedExpenses || []);
-      
+
       setLoading(false);
     } catch (err) {
       console.error('Error fetching expenses:', err);
@@ -110,36 +110,36 @@ const Expenses = () => {
   useEffect(() => {
     const userString = localStorage.getItem('user');
     const token = localStorage.getItem('accessToken');
-    
+
     if (!userString || !token) {
       navigate('/login');
       return;
     }
-    
+
     setUser(JSON.parse(userString));
-    
+
     // Get current property from localStorage or fetch first property
     const fetchProperties = async () => {
       try {
         // Use apiHelpers to fetch properties
         const fetchedProperties = await apiHelpers.get('properties/');
-        
+
         if (fetchedProperties.length > 0) {
           // Get current property from localStorage or use the first one
           const savedPropertyId = localStorage.getItem('currentPropertyId');
           let propertyToUse;
-          
+
           if (savedPropertyId) {
             propertyToUse = fetchedProperties.find(p => p.id.toString() === savedPropertyId);
           }
-          
+
           // If no saved property or saved property not found, use first property
           if (!propertyToUse) {
             propertyToUse = fetchedProperties[0];
           }
-          
+
           setCurrentProperty(propertyToUse);
-          
+
           // Fetch expenses for the selected property
           if (propertyToUse) {
             fetchExpenses(propertyToUse.id);
@@ -151,17 +151,17 @@ const Expenses = () => {
         setLoading(false);
       }
     };
-    
+
     fetchProperties();
   }, [navigate, fetchExpenses]); // Now fetchExpenses is properly included in dependencies
 
   // Handle property selection from dropdown
   const handleSelectProperty = useCallback((property) => {
     setCurrentProperty(property);
-    
+
     // Save to localStorage
     localStorage.setItem('currentPropertyId', property.id);
-    
+
     // Fetch expenses for the selected property
     fetchExpenses(property.id);
   }, [fetchExpenses]);
@@ -169,7 +169,7 @@ const Expenses = () => {
   // Handle input changes for new expense
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (type === 'checkbox') {
       setNewExpense({
         ...newExpense,
@@ -179,7 +179,7 @@ const Expenses = () => {
       // For amount field, store the exact value as entered (in dollars)
       // The backend will handle the conversion to cents
       const numberValue = value === '' ? '' : parseFloat(value);
-      
+
       setNewExpense({
         ...newExpense,
         [name]: numberValue
@@ -211,26 +211,26 @@ const Expenses = () => {
   // Handle form submission for new expense
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!newExpense.title || !newExpense.amount || !newExpense.category || !newExpense.date) {
       setError('Please fill in all required fields.');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(''); // Clear any previous errors
-      
+
       // Add property ID to expense data
       const expenseData = {
         ...newExpense,
         property_id: currentProperty.id
       };
-      
+
       // Use apiHelpers to create expense
       await apiHelpers.post('finances/expenses/', expenseData);
-      
+
       // Reset form
       setNewExpense({
         title: '',
@@ -242,10 +242,10 @@ const Expenses = () => {
         recurring_interval: 'monthly',
         property_id: ''
       });
-      
+
       setShowAddForm(false);
       setMessage('Expense added successfully!');
-      
+
       // Reload expenses
       if (currentProperty) {
         fetchExpenses(currentProperty.id);
@@ -260,26 +260,26 @@ const Expenses = () => {
   // Handle updating an existing expense
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!newExpense.title || !newExpense.amount || !newExpense.category || !newExpense.date) {
       setError('Please fill in all required fields.');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(''); // Clear any previous errors
-      
+
       // Add property ID to expense data
       const expenseData = {
         ...newExpense,
         property_id: currentProperty.id
       };
-      
+
       // Use apiHelpers to update expense
       await apiHelpers.put(`finances/expenses/${editingExpenseId}`, expenseData);
-      
+
       // Reset form
       setNewExpense({
         title: '',
@@ -291,11 +291,11 @@ const Expenses = () => {
         recurring_interval: 'monthly',
         property_id: ''
       });
-      
+
       setShowEditForm(false);
       setEditingExpenseId(null);
       setMessage('Expense updated successfully!');
-      
+
       // Reload expenses
       if (currentProperty) {
         fetchExpenses(currentProperty.id);
@@ -314,9 +314,9 @@ const Expenses = () => {
         setLoading(true);
         // Use apiHelpers to delete expense
         await apiHelpers.delete(`finances/expenses/${id}`);
-        
+
         setMessage('Expense deleted successfully!');
-        
+
         // Reload expenses
         if (currentProperty) {
           fetchExpenses(currentProperty.id);
@@ -407,7 +407,7 @@ const Expenses = () => {
         );
       default:
         return (
-          <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 t-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
@@ -420,43 +420,43 @@ const Expenses = () => {
         <div className="flex flex-col md:flex-row justify-between items-start mb-8">
           <div>
             <h1 className="text-2xl font-bold">Home Expenses</h1>
-            <p className="text-gray-400 mt-1">Track and manage your home-related expenses</p>
+            <p className="t-secondary mt-1">Track and manage your home-related expenses</p>
           </div>
-          
+
         </div>
 
         {/* Error and message display */}
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-4 rounded-md mb-6">
+          <div className="alert-error mb-6">
             {error}
           </div>
         )}
-        
+
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-4 rounded-md mb-6">
+          <div className="alert-success mb-6">
             {message}
           </div>
         )}
-        
+
         {/* Expense Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Monthly Total Card */}
           <div className="card p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-400 text-sm">Monthly Expenses</p>
+                <p className="t-secondary text-sm">Monthly Expenses</p>
                 <h3 className="text-xl font-bold mt-1">
                   {formatCurrency(monthlyTotal)}
                 </h3>
               </div>
-              <div className="p-3 rounded-full bg-green-900 bg-opacity-30">
+              <div className="p-3 rounded-full" style={{ background: 'var(--bg-card)' }}>
                 <svg className="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
             </div>
             <div className="flex items-center mt-4 text-sm">
-              <span className="text-gray-400">
+              <span className="t-secondary">
                 Current Month
               </span>
               <button className="ml-auto text-sky-400 hover:text-sky-300">
@@ -464,24 +464,24 @@ const Expenses = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Largest Category Card */}
           <div className="card p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-400 text-sm">Top Expense Category</p>
+                <p className="t-secondary text-sm">Top Expense Category</p>
                 <h3 className="text-xl font-bold mt-1">
                   {Object.keys(expensesByCategory).length > 0 ? (
                     Object.entries(expensesByCategory)
                       .sort((a, b) => b[1] - a[1])[0][0]
-                      .charAt(0).toUpperCase() + 
+                      .charAt(0).toUpperCase() +
                       Object.entries(expensesByCategory)
                         .sort((a, b) => b[1] - a[1])[0][0]
                         .slice(1)
                   ) : 'None'}
                 </h3>
               </div>
-              <div className="p-3 rounded-full bg-blue-900 bg-opacity-30">
+              <div className="p-3 rounded-full" style={{ background: 'var(--bg-card)' }}>
                 {Object.keys(expensesByCategory).length > 0 ? (
                   getCategoryIcon(Object.entries(expensesByCategory)
                     .sort((a, b) => b[1] - a[1])[0][0])
@@ -493,7 +493,7 @@ const Expenses = () => {
               </div>
             </div>
             <div className="flex items-center mt-4 text-sm">
-              <span className="text-gray-400">
+              <span className="t-secondary">
                 {Object.keys(expensesByCategory).length > 0 ? (
                   formatCurrency(Object.entries(expensesByCategory)
                     .sort((a, b) => b[1] - a[1])[0][1])
@@ -504,29 +504,29 @@ const Expenses = () => {
               </button>
             </div>
           </div>
-          
+
           {/* Recent Expenses Card */}
           <div className="card p-6">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-gray-400 text-sm">Recent Expenses</p>
+                <p className="t-secondary text-sm">Recent Expenses</p>
                 <h3 className="text-xl font-bold mt-1">
                   {expenses.length} Items
                 </h3>
               </div>
-              <div className="p-3 rounded-full bg-orange-900 bg-opacity-30">
+              <div className="p-3 rounded-full" style={{ background: 'var(--bg-card)' }}>
                 <svg className="h-6 w-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
               </div>
             </div>
             <div className="flex items-center mt-4 text-sm">
-              <span className="text-gray-400">
-                {dateRange === 'month' ? 'This Month' : 
-                 dateRange === 'quarter' ? 'This Quarter' : 
+              <span className="t-secondary">
+                {dateRange === 'month' ? 'This Month' :
+                 dateRange === 'quarter' ? 'This Quarter' :
                  dateRange === 'year' ? 'This Year' : 'All Time'}
               </span>
-              <button 
+              <button
                 className="ml-auto text-sky-400 hover:text-sky-300"
                 onClick={() => setShowAddForm(true)}
               >
@@ -535,49 +535,49 @@ const Expenses = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Filters and Add Button */}
         <div className="flex flex-col md:flex-row justify-between mb-6">
           <div className="flex overflow-x-auto pb-2 mb-4 md:mb-0">
             {/* Category filters */}
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'all' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2 whitespace-nowrap${filter === 'all' ? ' active' : ''}`}
               onClick={() => setFilter('all')}
             >
               All Expenses
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'utilities' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2 whitespace-nowrap${filter === 'utilities' ? ' active' : ''}`}
               onClick={() => setFilter('utilities')}
             >
               Utilities
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'mortgage' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2 whitespace-nowrap${filter === 'mortgage' ? ' active' : ''}`}
               onClick={() => setFilter('mortgage')}
             >
               Mortgage
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'insurance' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2 whitespace-nowrap${filter === 'insurance' ? ' active' : ''}`}
               onClick={() => setFilter('insurance')}
             >
               Insurance
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'maintenance' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2 whitespace-nowrap${filter === 'maintenance' ? ' active' : ''}`}
               onClick={() => setFilter('maintenance')}
             >
               Maintenance
             </button>
-            <button 
-              className={`mr-2 px-4 py-1 rounded-full text-sm whitespace-nowrap ${filter === 'taxes' ? 'bg-secondary text-white' : 'bg-gray-700 text-gray-300'}`}
+            <button
+              className={`filter-pill mr-2 whitespace-nowrap${filter === 'taxes' ? ' active' : ''}`}
               onClick={() => setFilter('taxes')}
             >
               Taxes
             </button>
           </div>
-          
+
           <div className="flex items-center">
             {/* Date range selector */}
             <select
@@ -595,18 +595,18 @@ const Expenses = () => {
               <option value="year">This Year</option>
               <option value="all">All Time</option>
             </select>
-            
+
             {/* Search box */}
             <div className="relative flex items-center mr-2">
               <input
                 type="text"
                 className="form-input w-40 md:w-64 py-2 pl-10 text-sm"
-                placeholder="Search expenses..."
+                placeholder=""
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <svg
-                className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                className="h-4 w-4 t-secondary absolute left-3 top-1/2 transform -translate-y-1/2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -614,9 +614,9 @@ const Expenses = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
-            
+
             {/* Add expense button */}
-            <button 
+            <button
               className="btn-secondary text-sm px-4 py-1 rounded-md flex items-center"
               onClick={() => setShowAddForm(true)}
             >
@@ -627,7 +627,7 @@ const Expenses = () => {
             </button>
           </div>
         </div>
-        
+
         {/* Add Expense Form */}
         {showAddForm && (
           <div className="card p-6 mb-8">
@@ -636,41 +636,41 @@ const Expenses = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="form-label">Expense Title*</label>
-                  <input 
-                    type="text" 
-                    name="title" 
-                    className="form-input" 
-                    value={newExpense.title} 
+                  <input
+                    type="text"
+                    name="title"
+                    className="form-input"
+                    value={newExpense.title}
                     onChange={handleInputChange}
                     placeholder="e.g. Electricity Bill"
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Amount ($)*</label>
-                  <input 
-                    type="number" 
-                    name="amount" 
-                    className="form-input" 
-                    value={newExpense.amount} 
+                  <input
+                    type="number"
+                    name="amount"
+                    className="form-input"
+                    value={newExpense.amount}
                     onChange={handleInputChange}
                     placeholder="e.g. 150 for $150"
                     step="0.01"
                     min="0"
                     required
                   />
-                  <small className="text-gray-400 mt-1 block">
+                  <small className="t-secondary mt-1 block">
                     Enter the exact dollar amount (e.g. 150 for $150)
                   </small>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Category*</label>
-                  <select 
-                    name="category" 
-                    className="form-input" 
-                    value={newExpense.category} 
+                  <select
+                    name="category"
+                    className="form-input"
+                    value={newExpense.category}
                     onChange={handleInputChange}
                     required
                   >
@@ -683,41 +683,41 @@ const Expenses = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Date*</label>
-                  <input 
-                    type="date" 
-                    name="date" 
-                    className="form-input" 
-                    value={newExpense.date} 
+                  <input
+                    type="date"
+                    name="date"
+                    className="form-input"
+                    value={newExpense.date}
                     onChange={handleInputChange}
                     required
                   />
                 </div>
-                
+
                 <div className="md:col-span-1">
                   <label className="form-label">Recurring Expense</label>
                   <div className="flex items-center mt-2">
-                    <input 
-                      type="checkbox" 
-                      name="recurring" 
-                      id="recurring" 
-                      className="form-checkbox h-5 w-5 text-sky-400 rounded bg-gray-700 border-gray-600" 
+                    <input
+                      type="checkbox"
+                      name="recurring"
+                      id="recurring"
+                      className="form-checkbox h-5 w-5 text-sky-400 rounded border-themed"
                       checked={newExpense.recurring}
                       onChange={handleInputChange}
                     />
-                    <label htmlFor="recurring" className="ml-2 text-gray-300">This is a recurring expense</label>
+                    <label htmlFor="recurring" className="ml-2 t-primary">This is a recurring expense</label>
                   </div>
                 </div>
-                
+
                 {newExpense.recurring && (
                   <div>
                     <label className="form-label">Recurring Interval</label>
-                    <select 
-                      name="recurring_interval" 
-                      className="form-input" 
-                      value={newExpense.recurring_interval} 
+                    <select
+                      name="recurring_interval"
+                      className="form-input"
+                      value={newExpense.recurring_interval}
                       onChange={handleInputChange}
                     >
                       <option value="weekly">Weekly</option>
@@ -728,24 +728,24 @@ const Expenses = () => {
                     </select>
                   </div>
                 )}
-                
+
                 <div className="md:col-span-3">
                   <label className="form-label">Description</label>
-                  <textarea 
-                    name="description" 
-                    className="form-input" 
-                    value={newExpense.description} 
+                  <textarea
+                    name="description"
+                    className="form-input"
+                    value={newExpense.description}
                     onChange={handleInputChange}
                     placeholder="Additional details about this expense..."
                     rows="3"
                   ></textarea>
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => setShowAddForm(false)}
                 >
                   Cancel
@@ -761,7 +761,7 @@ const Expenses = () => {
             </form>
           </div>
         )}
-        
+
         {/* Edit Expense Form */}
         {showEditForm && (
           <div className="card p-6 mb-8">
@@ -770,41 +770,41 @@ const Expenses = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="form-label">Expense Title*</label>
-                  <input 
-                    type="text" 
-                    name="title" 
-                    className="form-input" 
-                    value={newExpense.title} 
+                  <input
+                    type="text"
+                    name="title"
+                    className="form-input"
+                    value={newExpense.title}
                     onChange={handleInputChange}
                     placeholder="e.g. Electricity Bill"
                     required
                   />
                 </div>
-                
+
                 <div>
                   <label className="form-label">Amount ($)*</label>
-                  <input 
-                    type="number" 
-                    name="amount" 
-                    className="form-input" 
-                    value={newExpense.amount} 
+                  <input
+                    type="number"
+                    name="amount"
+                    className="form-input"
+                    value={newExpense.amount}
                     onChange={handleInputChange}
                     placeholder="e.g. 150 for $150"
                     step="0.01"
                     min="0"
                     required
                   />
-                  <small className="text-gray-400 mt-1 block">
+                  <small className="t-secondary mt-1 block">
                     Enter the exact dollar amount (e.g. 150 for $150)
                   </small>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Category*</label>
-                  <select 
-                    name="category" 
-                    className="form-input" 
-                    value={newExpense.category} 
+                  <select
+                    name="category"
+                    className="form-input"
+                    value={newExpense.category}
                     onChange={handleInputChange}
                     required
                   >
@@ -817,41 +817,41 @@ const Expenses = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="form-label">Date*</label>
-                  <input 
-                    type="date" 
-                    name="date" 
-                    className="form-input" 
-                    value={newExpense.date} 
+                  <input
+                    type="date"
+                    name="date"
+                    className="form-input"
+                    value={newExpense.date}
                     onChange={handleInputChange}
                     required
                   />
                 </div>
-                
+
                 <div className="md:col-span-1">
                   <label className="form-label">Recurring Expense</label>
                   <div className="flex items-center mt-2">
-                    <input 
-                      type="checkbox" 
-                      name="recurring" 
-                      id="edit-recurring" 
-                      className="form-checkbox h-5 w-5 text-sky-400 rounded bg-gray-700 border-gray-600" 
+                    <input
+                      type="checkbox"
+                      name="recurring"
+                      id="edit-recurring"
+                      className="form-checkbox h-5 w-5 text-sky-400 rounded border-themed"
                       checked={newExpense.recurring}
                       onChange={handleInputChange}
                     />
-                    <label htmlFor="edit-recurring" className="ml-2 text-gray-300">This is a recurring expense</label>
+                    <label htmlFor="edit-recurring" className="ml-2 t-primary">This is a recurring expense</label>
                   </div>
                 </div>
-                
+
                 {newExpense.recurring && (
                   <div>
                     <label className="form-label">Recurring Interval</label>
-                    <select 
-                      name="recurring_interval" 
-                      className="form-input" 
-                      value={newExpense.recurring_interval} 
+                    <select
+                      name="recurring_interval"
+                      className="form-input"
+                      value={newExpense.recurring_interval}
                       onChange={handleInputChange}
                     >
                       <option value="weekly">Weekly</option>
@@ -862,24 +862,24 @@ const Expenses = () => {
                     </select>
                   </div>
                 )}
-                
+
                 <div className="md:col-span-3">
                   <label className="form-label">Description</label>
-                  <textarea 
-                    name="description" 
-                    className="form-input" 
-                    value={newExpense.description} 
+                  <textarea
+                    name="description"
+                    className="form-input"
+                    value={newExpense.description}
                     onChange={handleInputChange}
                     placeholder="Additional details about this expense..."
                     rows="3"
                   ></textarea>
                 </div>
               </div>
-              
+
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  className="text-gray-400 hover:text-gray-300 px-4 py-2 mr-2"
+                  className="t-secondary px-4 py-2 mr-2"
                   onClick={() => {
                     setShowEditForm(false);
                     setEditingExpenseId(null);
@@ -908,7 +908,7 @@ const Expenses = () => {
             </form>
           </div>
         )}
-        
+
         {/* Expenses List */}
         {loading ? (
           <div className="text-center py-12">
@@ -916,18 +916,18 @@ const Expenses = () => {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p className="mt-3 text-gray-400">Loading expenses...</p>
+            <p className="mt-3 t-secondary">Loading expenses...</p>
           </div>
         ) : sortedExpenses.length === 0 ? (
           <div className="text-center py-16 card">
-            <svg className="h-16 w-16 text-gray-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <h3 className="text-lg font-medium mb-2">No expenses found</h3>
-            <p className="text-gray-400 mb-6">
+            <p className="t-secondary mb-6">
               {searchTerm ? `No results for "${searchTerm}"` : filter !== 'all' ? `No ${filter} expenses found` : 'You have not added any expenses for this period'}
             </p>
-            <button 
+            <button
               className="btn-secondary px-4 py-2 rounded-md"
               onClick={() => setShowAddForm(true)}
             >
@@ -938,34 +938,34 @@ const Expenses = () => {
           <div className="card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-700 bg-opacity-50">
+                <thead style={{ background: 'var(--bg-card)' }}>
                   <tr>
-                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">Title</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">Category</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">Amount</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">Date</th>
-                    <th className="py-3 px-4 text-left text-sm font-medium text-gray-300">Recurring</th>
-                    <th className="py-3 px-4 text-right text-sm font-medium text-gray-300">Actions</th>
+                    <th className="py-3 px-4 text-left text-sm font-medium t-primary">Title</th>
+                    <th className="py-3 px-4 text-left text-sm font-medium t-primary">Category</th>
+                    <th className="py-3 px-4 text-left text-sm font-medium t-primary">Amount</th>
+                    <th className="py-3 px-4 text-left text-sm font-medium t-primary">Date</th>
+                    <th className="py-3 px-4 text-left text-sm font-medium t-primary">Recurring</th>
+                    <th className="py-3 px-4 text-right text-sm font-medium t-primary">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700">
+                <tbody className="divide-y border-themed">
                   {sortedExpenses.map(expense => (
                     <tr key={expense.id} className="hover:bg-gray-700 hover:bg-opacity-30">
                       <td className="py-3 px-4">
                         <div className="flex items-center">
-                          <div className="p-2 rounded-full bg-gray-700 mr-3">
+                          <div className="p-2 rounded-full mr-3" style={{ background: 'var(--bg-card)' }}>
                             {getCategoryIcon(expense.category)}
                           </div>
                           <div>
                             <div className="font-medium">{expense.title}</div>
                             {expense.description && (
-                              <div className="text-xs text-gray-400 truncate max-w-xs">{expense.description}</div>
+                              <div className="text-xs t-secondary truncate max-w-xs">{expense.description}</div>
                             )}
                           </div>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-sm">
-                        <span className="px-2 py-1 rounded-full text-xs bg-gray-700">
+                        <span className="badge badge-neutral">
                           {expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}
                         </span>
                       </td>
@@ -984,12 +984,12 @@ const Expenses = () => {
                             {expense.recurring_interval.charAt(0).toUpperCase() + expense.recurring_interval.slice(1)}
                           </span>
                         ) : (
-                          <span className="text-gray-400">No</span>
+                          <span className="t-secondary">No</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <button 
-                          className="text-gray-400 hover:text-gray-300 p-1 rounded mr-1" 
+                        <button
+                          className="t-secondary hover:text-gray-300 p-1 rounded mr-1"
                           title="Edit"
                           onClick={() => handleEdit(expense)}
                         >
@@ -997,8 +997,8 @@ const Expenses = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                           </svg>
                         </button>
-                        <button 
-                          className="text-red-500 hover:text-red-400 p-1 rounded" 
+                        <button
+                          className="text-red-500 hover:text-red-400 p-1 rounded"
                           title="Delete"
                           onClick={() => handleDelete(expense.id)}
                         >

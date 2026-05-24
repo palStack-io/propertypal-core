@@ -101,19 +101,19 @@ const ResetPasswordForm = () => {
         <h2 className="text-2xl font-semibold mb-6 text-center">Set New Password</h2>
         
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-3 rounded-md mb-4">
+          <div className="alert-error mb-4">
             {error}
           </div>
         )}
         
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-3 rounded-md mb-4">
+          <div className="alert-success mb-4">
             {message}
           </div>
         )}
         
         {!resetToken ? (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-3 rounded-md mb-4">
+          <div className="alert-error mb-4">
             Invalid or missing reset token. Please request a new password reset link.
             <div className="mt-4 text-center">
               <Link to="/forgot-password" className="text-secondary hover:text-secondary-light">
@@ -135,7 +135,7 @@ const ResetPasswordForm = () => {
                 required
                 minLength="8"
               />
-              <p className="text-xs text-gray-400 mt-1">Password must be at least 8 characters</p>
+              <p className="text-xs t-secondary mt-1">Password must be at least 8 characters</p>
             </div>
             
             <div className="mt-4">
@@ -162,7 +162,7 @@ const ResetPasswordForm = () => {
             </div>
             
             <div className="mt-6 text-center">
-              <p className="text-gray-400">
+              <p className="t-secondary">
                 <Link to="/login" className="text-secondary hover:text-secondary-light">
                   Back to Login
                 </Link>
