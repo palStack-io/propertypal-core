@@ -131,6 +131,9 @@ Thumbs.db
 postgres_data/
 app_uploads/
 
+# Deploy file — contains real credentials, never commit
+docker-compose.deploy.yml
+
 # SSL certificates
 nginx/ssl/*.pem
 nginx/ssl/*.key

@@ -10,10 +10,10 @@ const MainLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navbar toggleSidebar={toggleSidebar} />
-      <Sidebar isOpen={sidebarOpen} />
-      <main className={`main-content transition-all duration-300`}>
+      <Sidebar isOpen={sidebarOpen} closeSidebar={() => setSidebarOpen(false)} />
+      <main className="main-content">
         {children}
       </main>
     </div>

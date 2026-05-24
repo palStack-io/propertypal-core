@@ -64,9 +64,9 @@ const LoginForm = () => {
     try {
       // Use apiHelpers instead of direct api call
       const response = await apiHelpers.post('auth/login', formData);
-      
+
       setLoading(false);
-      
+
       if (response && response.access_token) {
         // Store the tokens in localStorage
         localStorage.setItem('accessToken', response.access_token);
@@ -96,14 +96,14 @@ const LoginForm = () => {
     } catch (err) {
       setLoading(false);
       console.error('Login error:', err);
-      
+
       // Check if the error indicates email verification is needed
       const errorMessage = err.response?.data?.error || '';
-      const needsVerification = 
+      const needsVerification =
         errorMessage.toLowerCase().includes('verify') ||
         errorMessage.toLowerCase().includes('verification') ||
         errorMessage.toLowerCase().includes('verified');
-      
+
       if (needsVerification) {
         setError('Please verify your email address before logging in.');
       } else if (err.message === 'Network Error') {
@@ -138,17 +138,17 @@ const LoginForm = () => {
         <div className="flex flex-col items-center mb-6">
           <img src="/propertyPal.png" alt="propertyPal" className="h-16 w-16 mb-3" />
           <div className="text-3xl font-bold">
-            <span className="property-text">property</span><span className="text-white">Pal</span>
+            <span className="property-text">property</span><span className="t-primary">Pal</span>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs t-muted mt-1">
             Part of the <a href="https://palstack.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">palStack</a> ecosystem
           </div>
         </div>
-        
+
         <h2 className="text-2xl font-semibold mb-6 text-center">Log In to Your Account</h2>
-        
+
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-3 rounded-md mb-4">
+          <div className="alert-error mb-4">
             {error}
             {error.toLowerCase().includes('verify') && (
               <div className="mt-2">
@@ -163,13 +163,13 @@ const LoginForm = () => {
             )}
           </div>
         )}
-        
+
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-3 rounded-md mb-4">
+          <div className="alert-success mb-4">
             {message}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="form-label">Email Address</label>
@@ -183,7 +183,7 @@ const LoginForm = () => {
               required
             />
           </div>
-          
+
           <div className="mt-4">
             <label htmlFor="password" className="form-label">Password</label>
             <input
@@ -195,7 +195,7 @@ const LoginForm = () => {
               onChange={handleChange}
               required
             />
-            
+
             {/* Add Forgot Password link */}
             <div className="flex justify-end mt-2">
               <Link to="/forgot-password" className="text-sm text-secondary hover:text-secondary-light">
@@ -203,7 +203,7 @@ const LoginForm = () => {
               </Link>
             </div>
           </div>
-          
+
           <div className="mt-6">
             <button
               type="submit"
@@ -214,20 +214,20 @@ const LoginForm = () => {
             </button>
           </div>
         </form>
-        
+
         <div className="mt-6 text-center">
-          <p className="text-gray-400">
+          <p className="t-secondary">
             Don't have an account?{' '}
             <Link to="/signup" className="text-secondary hover:text-secondary-light">
               Sign up
             </Link>
           </p>
         </div>
-        
+
         {/* Only show resend option when there's a verification error */}
         {error && error.toLowerCase().includes('verify') && (
-          <div className="mt-4 text-center border-t border-gray-700 pt-4">
-            <p className="text-gray-400 text-sm">
+          <div className="mt-4 text-center border-t border-themed pt-4">
+            <p className="t-secondary text-sm">
               Didn't receive verification email?{' '}
               <button
                 type="button"
@@ -242,15 +242,15 @@ const LoginForm = () => {
 
         {/* Demo Accounts Section - Only shown when demo mode is enabled */}
         {demoMode && demoAccounts.length > 0 && (
-          <div className="mt-6 border-t border-gray-700 pt-6">
-            <div className="bg-blue-900 bg-opacity-20 border border-blue-800 rounded-lg p-4">
+          <div className="mt-6 border-t border-themed pt-6">
+            <div className="alert-info p-4">
               <h3 className="text-lg font-semibold text-blue-400 mb-3 flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                 </svg>
                 Try Demo Accounts
               </h3>
-              <p className="text-gray-400 text-sm mb-3">
+              <p className="t-secondary text-sm mb-3">
                 Click an account below to auto-fill credentials. Sessions expire after 10 minutes.
               </p>
               <div className="space-y-2">
@@ -259,16 +259,16 @@ const LoginForm = () => {
                     key={index}
                     type="button"
                     onClick={() => handleDemoAccountClick(account.email)}
-                    className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-blue-500 p-3 rounded-lg text-left transition-all duration-200 group"
+                    className="card p-3 text-left w-full group"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-white font-medium group-hover:text-blue-400 transition-colors">
+                        <div className="t-primary font-medium transition-colors">
                           {account.name}
                         </div>
-                        <div className="text-gray-400 text-sm">{account.email}</div>
+                        <div className="t-secondary text-sm">{account.email}</div>
                       </div>
-                      <svg className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 t-muted transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </div>

@@ -1,49 +1,44 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 
-const Navbar = ({ toggleSidebar, user }) => {
-  // Get user initials for the avatar
-  const getUserInitials = () => {
-    if (user && user.first_name && user.last_name) {
-      return `${user.first_name[0]}${user.last_name[0]}`;
-    }
-    return 'U';
+const Navbar = () => {
+  const [theme, setTheme] = useState(
+    () => document.documentElement.getAttribute('data-theme') || 'dark'
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('palstack-theme', next);
+    setTheme(next);
   };
 
   return (
-    <nav className="navbar fixed top-0 w-full z-40 py-3 px-4 md:px-6">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <button 
-            className="mobile-menu-btn mr-4 text-gray-300 focus:outline-none" 
-            onClick={toggleSidebar}
-            aria-label="Toggle menu"
+    <nav className="navbar py-3 px-4 md:px-6" style={{ left: '236px' }}>
+      <div className="flex justify-end items-center">
+        {/* Theme toggle */}
+        <div className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+          <button
+            className={`theme-toggle-btn ${theme === 'light' ? 'active' : ''}`}
+            aria-label="Light mode"
+            onClick={e => { e.stopPropagation(); if (theme !== 'light') toggleTheme(); }}
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
+            ☀️
           </button>
-          {/* Use logo from public directory */}
-          <Link to="/dashboard" className="flex items-center">
-            <img
-              src="/propertyPal.png"
-              alt="propertyPal Logo"
-              className="h-8 w-8 mr-2"
-            />
-            <span className="text-xl font-bold">
-              <span className="property-text">property</span><span className="text-white">Pal</span>
-            </span>
-          </Link>
-        </div>
-        <div className="flex items-center">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-gray-500 flex items-center justify-center text-white font-semibold">
-              {getUserInitials()}
-            </div>
-            <span className="ml-2 text-sm hidden md:block">
-              {user ? `${user.first_name} ${user.last_name}` : 'User'}
-            </span>
-          </div>
+          <button
+            className={`theme-toggle-btn ${theme === 'dark' ? 'active' : ''}`}
+            aria-label="Dark mode"
+            onClick={e => { e.stopPropagation(); if (theme !== 'dark') toggleTheme(); }}
+          >
+            🌙
+          </button>
         </div>
       </div>
     </nav>

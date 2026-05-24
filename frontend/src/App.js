@@ -80,6 +80,11 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      {/* Ambient blob background — fixed, renders behind all content */}
+      <div className="blob-container" aria-hidden="true">
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+      </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/signup" element={<SignupForm />} />

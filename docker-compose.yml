@@ -4,7 +4,7 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:13
-    container_name: propertypal-db
+    container_name: propertypal_core_db
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
@@ -26,7 +26,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: propertypal-backend
+    container_name: propertypal-core-backend
     restart: always
     volumes:
       - app_uploads:/app/uploads
@@ -66,7 +66,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: propertypal-frontend
+    container_name: propertypal-core-frontend
     restart: always
     environment:
       - REACT_APP_API_URL=${REACT_APP_API_URL:-/api}
@@ -84,7 +84,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
-    container_name: propertypal-nginx
+    container_name: propertypal-core-nginx
     restart: always
     ports:
       - "${PORT:-80}:80"

@@ -7,22 +7,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: '#1F2937',
-        'card-bg': '#2D3748',
-        primary: '#38bdf8',  // Sky blue primary
-        secondary: '#3b82f6', // Blue secondary
-        accent: '#ED8936',   // Orange shade
-        'property-primary': '#38bdf8', // Sky blue for PropertyPal
-        'property-secondary': '#3b82f6', // Blue secondary for PropertyPal
-        'property-light': '#f0f9ff', // Light sky blue
-        'property-color': '#38bdf8', // Sky blue for "Property" text
-        text: '#E5E7EB',
-        'text-dark': '#9CA3AF',
-        'input-bg': '#374151',
-        'input-border': '#4B5563',
+        primary: '#38bdf8',
+        secondary: '#3b82f6',
+        accent: '#ED8936',
+        'property-primary': '#38bdf8',
+        'property-secondary': '#3b82f6',
+        'property-light': '#f0f9ff',
+        'property-color': '#38bdf8',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['"Bricolage Grotesque"', 'sans-serif'],
+        serif: ['"Instrument Serif"', 'serif'],
       },
       backgroundImage: {
         'property-gradient': 'linear-gradient(to bottom right, #38bdf8, #3b82f6)',

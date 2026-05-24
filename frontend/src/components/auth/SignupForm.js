@@ -33,19 +33,19 @@ const SignupForm = () => {
     try {
       // Use apiHelpers instead of direct axios call
       console.log("Attempting to register with data:", formData);
-      
+
       const response = await apiHelpers.post('auth/register', formData);
-      
+
       setLoading(false);
       console.log("Registration successful:", response);
-      
+
       // Updated to handle email verification flow
-      setMessage(response.message || 
+      setMessage(response.message ||
         'Registration successful! Please check your email to verify your account before logging in.');
-      
+
       // Store email for potential resending of verification
       setRegisteredEmail(formData.email);
-      
+
       // Clear form fields after successful registration
       setFormData({
         email: '',
@@ -54,7 +54,7 @@ const SignupForm = () => {
         last_name: '',
         phone: ''
       });
-      
+
       setRegistrationSuccess(true);
 
       // Check if this is the first user (requires property setup)
@@ -82,7 +82,7 @@ const SignupForm = () => {
     } catch (err) {
       setLoading(false);
       console.error('Registration error:', err);
-      
+
       if (err.message === 'Network Error') {
         setError('Cannot connect to the server. Please check if the backend server is running and properly configured for CORS.');
       } else if (err.response) {
@@ -105,16 +105,16 @@ const SignupForm = () => {
   // For development purposes
   const handleDevelopmentSignup = () => {
     setLoading(true);
-    
+
     // Simulate loading
     setTimeout(() => {
       setLoading(false);
       setMessage('Development registration successful! Please check your email for verification instructions.');
-      
+
       // Set the registered email for dev mode too
       setRegisteredEmail('dev@example.com');
       setRegistrationSuccess(true);
-      
+
       // Clear form fields
       setFormData({
         email: '',
@@ -123,13 +123,13 @@ const SignupForm = () => {
         last_name: '',
         phone: ''
       });
-      
+
       // Navigate to login page after a delay (uses the navigate function)
       setTimeout(() => {
-        navigate('/login', { 
-          state: { 
-            message: 'Development registration successful! Please verify your email before logging in.' 
-          } 
+        navigate('/login', {
+          state: {
+            message: 'Development registration successful! Please verify your email before logging in.'
+          }
         });
       }, 2000);
     }, 1000);
@@ -139,17 +139,17 @@ const SignupForm = () => {
   const handleResendVerification = async () => {
     // Use the stored email if available, otherwise use the current form email
     const emailToUse = registeredEmail || formData.email;
-    
+
     if (!emailToUse) {
       setError('Please enter your email address to resend verification');
       return;
     }
-    
+
     // Navigate to the dedicated resend verification page
-    navigate('/resend-verification', { 
-      state: { 
-        email: emailToUse 
-      } 
+    navigate('/resend-verification', {
+      state: {
+        email: emailToUse
+      }
     });
   };
 
@@ -159,25 +159,25 @@ const SignupForm = () => {
         <div className="flex flex-col items-center mb-6">
           <img src="/propertyPal.png" alt="propertyPal" className="h-16 w-16 mb-3" />
           <div className="text-3xl font-bold">
-            <span className="property-text">property</span><span className="text-white">Pal</span>
+            <span className="property-text">property</span><span className="t-primary">Pal</span>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs t-muted mt-1">
             Part of the <a href="https://palstack.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">palStack</a> ecosystem
           </div>
         </div>
-        
+
         <h2 className="text-2xl font-semibold mb-6 text-center">Create an Account</h2>
-        
+
         {error && (
-          <div className="bg-red-900 bg-opacity-30 text-red-400 p-3 rounded-md mb-4">
+          <div className="alert-error mb-4">
             {error}
           </div>
         )}
-        
+
         {message && (
-          <div className="bg-green-900 bg-opacity-30 text-green-400 p-3 rounded-md mb-4">
+          <div className="alert-success mb-4">
             {message}
-            
+
             {/* Show resend verification option if registration was successful */}
             {registrationSuccess && (
               <div className="mt-2">
@@ -192,7 +192,7 @@ const SignupForm = () => {
             )}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -207,7 +207,7 @@ const SignupForm = () => {
                 required
               />
             </div>
-            
+
             <div>
               <label htmlFor="last_name" className="form-label">Last Name</label>
               <input
@@ -221,7 +221,7 @@ const SignupForm = () => {
               />
             </div>
           </div>
-          
+
           <div className="mt-4">
             <label htmlFor="email" className="form-label">Email Address</label>
             <input
@@ -234,7 +234,7 @@ const SignupForm = () => {
               required
             />
           </div>
-          
+
           <div className="mt-4">
             <label htmlFor="phone" className="form-label">Phone Number (optional)</label>
             <input
@@ -246,7 +246,7 @@ const SignupForm = () => {
               onChange={handleChange}
             />
           </div>
-          
+
           <div className="mt-4">
             <label htmlFor="password" className="form-label">Password</label>
             <input
@@ -259,9 +259,9 @@ const SignupForm = () => {
               required
               minLength="8"
             />
-            <p className="text-xs text-gray-400 mt-1">Password must be at least 8 characters</p>
+            <p className="text-xs t-secondary mt-1">Password must be at least 8 characters</p>
           </div>
-          
+
           <div className="mt-6">
             <button
               type="submit"
@@ -272,30 +272,30 @@ const SignupForm = () => {
             </button>
           </div>
         </form>
-        
+
         {/* For development/debugging purposes */}
         <div className="mt-4 text-center">
           <button
             type="button"
-            className="text-xs text-gray-400 underline"
+            className="text-xs t-muted underline"
             onClick={handleDevelopmentSignup}
           >
             Use Development Mode
           </button>
         </div>
-        
+
         <div className="mt-6 text-center">
-          <p className="text-gray-400">
+          <p className="t-secondary">
             Already have an account?{' '}
             <Link to="/login" className="text-secondary hover:text-secondary-light">
               Log in
             </Link>
           </p>
         </div>
-        
+
         {/* Resend verification link */}
         <div className="mt-4 text-center">
-          <p className="text-gray-400 text-sm">
+          <p className="t-secondary text-sm">
             Didn't receive verification email?{' '}
             <button
               type="button"
