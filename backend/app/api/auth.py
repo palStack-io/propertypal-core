@@ -64,13 +64,7 @@ def register():
     db.session.commit()
 
     # Create default settings
-    settings = Settings(
-        user_id=new_user.id,
-        currency='USD',
-        date_format='MM/DD/YYYY',
-        notifications_enabled=True,
-        email_notifications=False
-    )
+    settings = Settings(user_id=new_user.id)
     db.session.add(settings)
     db.session.commit()
 
