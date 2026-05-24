@@ -305,6 +305,7 @@ const PropertyPalDashboard = () => {
             <DashboardDocumentsCard
               documents={documents}
               loadingDashboardData={loadingDashboardData}
+              currentProperty={currentProperty}
             />
           </div>
 

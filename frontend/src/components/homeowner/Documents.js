@@ -15,6 +15,7 @@ const Documents = () => {
   const [message, setMessage] = useState('');
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingDoc, setViewingDoc] = useState(null);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadData, setUploadData] = useState({
     title: '',
@@ -479,7 +480,7 @@ const Documents = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDocuments.map(doc => (
-              <div key={doc.id} className="card overflow-hidden">
+              <div key={doc.id} className="card overflow-hidden cursor-pointer" onClick={() => setViewingDoc(doc)}>
                 <div className="p-6">
                   <div className="flex items-start mb-4">
                     <div className="p-2 rounded mr-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
@@ -513,29 +514,34 @@ const Documents = () => {
                   </div>
 
                   <div className="flex justify-between mt-4">
-                    {/* Use the URL directly if available */}
-                    {doc.url ? (
-                      <a
-                        href={getDocumentUrl(doc, currentProperty?.id)}
-                        className="text-secondary hover:text-secondary-light text-sm"
-                        download={doc.title}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Download
-                      </a>
-                    ) : (
+                    <div className="flex gap-3">
                       <button
-                        className="text-secondary hover:text-secondary-light text-sm"
-                        onClick={() => handleDownload(doc)}
+                        className="t-brand hover:opacity-80 text-sm"
+                        onClick={() => setViewingDoc(doc)}
                       >
-                        Download
+                        View
                       </button>
-                    )}
-
+                      {doc.url ? (
+                        <a
+                          href={getDocumentUrl(doc, currentProperty?.id)}
+                          className="text-secondary hover:text-secondary-light text-sm"
+                          download={doc.title}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          Download
+                        </a>
+                      ) : (
+                        <button
+                          className="text-secondary hover:text-secondary-light text-sm"
+                          onClick={(e) => { e.stopPropagation(); handleDownload(doc); }}
+                        >
+                          Download
+                        </button>
+                      )}
+                    </div>
                     <button
                       className="text-red-500 hover:text-red-400 text-sm"
-                      onClick={() => handleDelete(doc)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
                     >
                       Delete
                     </button>
@@ -657,6 +663,59 @@ const Documents = () => {
           </div>
         )}
       </div>
+
+      {/* Document Viewer Modal */}
+      {viewingDoc && (() => {
+        const url = getDocumentUrl(viewingDoc, currentProperty?.id);
+        const isImage = viewingDoc.file_type?.startsWith('image/') ||
+          /\.(jpg|jpeg|png|gif|webp)$/i.test(viewingDoc.url || '');
+        const isPdf = viewingDoc.file_type === 'application/pdf' ||
+          /\.pdf$/i.test(viewingDoc.url || '');
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black bg-opacity-75" onClick={() => setViewingDoc(null)} />
+            <div className="card w-full max-w-4xl max-h-[90vh] flex flex-col relative">
+              <div className="flex justify-between items-center p-4 border-b border-themed flex-shrink-0">
+                <h2 className="font-semibold t-primary truncate pr-4">{viewingDoc.title}</h2>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {url && (
+                    <a href={url} download={viewingDoc.title}
+                      className="btn-secondary text-sm px-3 py-1 rounded-md">
+                      Download
+                    </a>
+                  )}
+                  <button onClick={() => setViewingDoc(null)} className="t-muted hover:t-primary">
+                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-auto p-4 flex items-center justify-center min-h-0">
+                {isImage ? (
+                  <img src={url} alt={viewingDoc.title}
+                    className="max-w-full max-h-full object-contain rounded-lg" />
+                ) : isPdf ? (
+                  <iframe src={url} title={viewingDoc.title}
+                    className="w-full rounded-lg" style={{ height: '70vh' }} />
+                ) : (
+                  <div className="text-center py-12">
+                    <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <p className="t-secondary mb-4">Preview not available for this file type.</p>
+                    {url && (
+                      <a href={url} download={viewingDoc.title} className="btn-primary px-6 py-2 rounded-md">
+                        Download File
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </Navigation>
   );
 };

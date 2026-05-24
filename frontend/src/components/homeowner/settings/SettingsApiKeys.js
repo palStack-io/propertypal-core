@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiHelpers } from '../../../services/api';
 
 export default function SettingsApiKeys({ setMessage, setError }) {
@@ -23,7 +23,7 @@ export default function SettingsApiKeys({ setMessage, setError }) {
     finally { setLoading(false); }
   };
 
-  if (!loaded) { fetchKeys(); }
+  useEffect(() => { fetchKeys(); }, []);
 
   const handleCreate = async (e) => {
     e.preventDefault();

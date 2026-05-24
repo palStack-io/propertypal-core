@@ -45,8 +45,8 @@ def upload_property_photo():
     if not allowed_file(file.filename):
         return jsonify({"error": f"File type not allowed. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"}), 400
 
-    # Get base folder path
-    photos_base_folder = os.path.join(current_app.root_path, 'uploads/documents/photos')
+    # Get base folder path from config (mounted at /app/uploads in Docker)
+    photos_base_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'documents', 'photos')
 
     # Create property-specific folder
     property_folder = os.path.join(photos_base_folder, f"property_{property_id}")

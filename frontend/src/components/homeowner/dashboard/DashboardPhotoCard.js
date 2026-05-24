@@ -13,6 +13,7 @@ export default function DashboardPhotoCard({
   deletePhoto,
 }) {
   const [showGallery, setShowGallery] = useState(false);
+  const [viewingPhoto, setViewingPhoto] = useState(null);
 
   return (
     <>
@@ -38,7 +39,8 @@ export default function DashboardPhotoCard({
                 <img
                   src={homePhotos.find(p => p.is_primary)?.url || homePhotos[0].url}
                   alt="Home Exterior"
-                  className="home-image-main w-full h-full object-cover hidden"
+                  className="home-image-main w-full h-full object-cover hidden cursor-pointer"
+                  onClick={() => setViewingPhoto(homePhotos.find(p => p.is_primary) || homePhotos[0])}
                   onLoad={(e) => {
                     e.target.classList.remove('hidden');
                     const fallback = e.target.parentNode.querySelector('.fallback-house');
@@ -146,7 +148,7 @@ export default function DashboardPhotoCard({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {homePhotos.map(photo => (
-                    <div key={photo.id} className="relative group">
+                    <div key={photo.id} className="relative group cursor-pointer" onClick={() => setViewingPhoto(photo)}>
                       <img
                         src={photo.url}
                         alt={photo.title || 'Home'}
@@ -157,7 +159,7 @@ export default function DashboardPhotoCard({
                         {!photo.is_primary && (
                           <button
                             className="text-white p-2 bg-sky-500 rounded-full"
-                            onClick={() => setAsPrimary(photo.id)}
+                            onClick={(e) => { e.stopPropagation(); setAsPrimary(photo.id); }}
                             title="Set as primary photo"
                           >
                             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +169,7 @@ export default function DashboardPhotoCard({
                         )}
                         <button
                           className="text-white p-2 bg-red-600 rounded-full"
-                          onClick={() => deletePhoto(photo.id)}
+                          onClick={(e) => { e.stopPropagation(); deletePhoto(photo.id); }}
                           title="Delete photo"
                         >
                           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -204,6 +206,55 @@ export default function DashboardPhotoCard({
           </div>
         </div>
       )}
+      {viewingPhoto && (() => {
+        const viewingPhotoIdx = homePhotos.findIndex(p => p.id === viewingPhoto.id);
+        const hasPrev = viewingPhotoIdx > 0;
+        const hasNext = viewingPhotoIdx < homePhotos.length - 1;
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" onClick={() => setViewingPhoto(null)}>
+            <div className="fixed inset-0 bg-black bg-opacity-90" />
+            <button
+              className="absolute top-4 right-4 z-10 text-white bg-black/50 rounded-full p-2 hover:bg-black/80"
+              onClick={() => setViewingPhoto(null)}
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            {hasPrev && (
+              <button
+                className="absolute left-4 z-10 text-white bg-black/50 rounded-full p-2 hover:bg-black/80"
+                onClick={(e) => { e.stopPropagation(); setViewingPhoto(homePhotos[viewingPhotoIdx - 1]); }}
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+            {hasNext && (
+              <button
+                className="absolute right-4 z-10 text-white bg-black/50 rounded-full p-2 hover:bg-black/80"
+                onClick={(e) => { e.stopPropagation(); setViewingPhoto(homePhotos[viewingPhotoIdx + 1]); }}
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+            <img
+              src={viewingPhoto.url}
+              alt={viewingPhoto.title || 'Home'}
+              className="relative max-w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={e => e.stopPropagation()}
+            />
+            {viewingPhoto.title && (
+              <p className="absolute bottom-6 left-0 right-0 text-center text-white text-sm font-medium">
+                {viewingPhoto.title}
+              </p>
+            )}
+          </div>
+        );
+      })()}
     </>
   );
 }

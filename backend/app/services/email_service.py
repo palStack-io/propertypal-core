@@ -36,19 +36,23 @@ def send_password_reset_email(user, reset_url):
         else:
             reset_url = f"{frontend_url}{reset_url if reset_url.startswith('/') else '/'+reset_url}"
     
-    subject = "Password Reset Request"
+    subject = "Reset your propertyPal password"
     recipients = [user.email]
-    
-    # Create HTML content for the email
+
     html_body = f"""
-    <h1>Password Reset</h1>
-    <p>Hello {user.first_name or 'there'},</p>
-    <p>You requested a password reset for your HomieHQ account.</p>
-    <p>Please click on the following link to reset your password:</p>
-    <p><a href="{reset_url}">Reset your password</a></p>
-    <p>If you did not request a password reset, please ignore this email.</p>
-    <p>This link will expire in 60 minutes.</p>
-    <p>Thank you,<br>The HomieHQ Team</p>
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #0f172a; color: #e2e8f0; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 24px; font-weight: 800; color: #38bdf8;">property</span><span style="font-size: 24px; font-weight: 800; color: #ffffff;">Pal</span>
+      </div>
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #f1f5f9;">Reset your password</h2>
+      <p style="color: #94a3b8; margin-bottom: 24px;">Hi {user.first_name or 'there'}, we received a request to reset your propertyPal password. Click the button below — this link expires in 60 minutes.</p>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="{reset_url}" style="display: inline-block; background: #38bdf8; color: #0f172a; font-weight: 700; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 15px;">Reset Password</a>
+      </div>
+      <p style="color: #64748b; font-size: 13px;">If you didn't request this, you can safely ignore this email. Your password won't change.</p>
+      <hr style="border: none; border-top: 1px solid #1e293b; margin: 24px 0;" />
+      <p style="color: #475569; font-size: 12px; text-align: center;">propertyPal · Part of the <a href="https://palstack.io" style="color: #38bdf8;">palStack</a> ecosystem</p>
+    </div>
     """
     
     send_email(subject, recipients, html_body)
@@ -56,24 +60,25 @@ def send_password_reset_email(user, reset_url):
 
 def send_welcome_email(user):
     """Send welcome email to newly registered user"""
-    subject = "Welcome to HomieHQ!"
+    subject = "Welcome to propertyPal!"
     recipients = [user.email]
-    
-    # Create HTML content for the welcome email
+
     html_body = f"""
-    <h1>Welcome to HomieHQ!</h1>
-    <p>Hello {user.first_name or 'there'},</p>
-    <p>Thank you for registering with HomieHQ. We're excited to have you on board!</p>
-    <p>With HomieHQ, you can:</p>
-    <ul>
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #0f172a; color: #e2e8f0; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 24px; font-weight: 800; color: #38bdf8;">property</span><span style="font-size: 24px; font-weight: 800; color: #ffffff;">Pal</span>
+      </div>
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #f1f5f9;">Welcome, {user.first_name or 'there'}!</h2>
+      <p style="color: #94a3b8; margin-bottom: 16px;">Your propertyPal account is ready. Here's what you can do:</p>
+      <ul style="color: #94a3b8; padding-left: 20px; margin-bottom: 24px; line-height: 1.8;">
         <li>Track all your properties in one place</li>
-        <li>Manage maintenance requests</li>
+        <li>Manage maintenance requests &amp; seasonal checklists</li>
         <li>Store important documents securely</li>
-        <li>Track expenses and income</li>
-        <li>And much more!</li>
-    </ul>
-    <p>If you have any questions or need help getting started, please don't hesitate to contact our support team.</p>
-    <p>Best regards,<br>The HomieHQ Team</p>
+        <li>Track expenses, budgets &amp; generate reports</li>
+      </ul>
+      <hr style="border: none; border-top: 1px solid #1e293b; margin: 24px 0;" />
+      <p style="color: #475569; font-size: 12px; text-align: center;">propertyPal · Part of the <a href="https://palstack.io" style="color: #38bdf8;">palStack</a> ecosystem</p>
+    </div>
     """
     
     send_email(subject, recipients, html_body)
@@ -89,18 +94,23 @@ def send_verification_email(user, verification_url):
         else:
             verification_url = f"{frontend_url}{verification_url if verification_url.startswith('/') else '/'+verification_url}"
     
-    subject = "Verify Your Email for HomieHQ"
+    subject = "Verify your propertyPal email"
     recipients = [user.email]
-    
-    # Create HTML content for the verification email
+
     html_body = f"""
-    <h1>Email Verification</h1>
-    <p>Hello {user.first_name or 'there'},</p>
-    <p>Thank you for registering with HomieHQ. To complete your registration, please verify your email:</p>
-    <p><a href="{verification_url}">Verify your email address</a></p>
-    <p>This link will expire in 24 hours.</p>
-    <p>If you did not create this account, please ignore this email.</p>
-    <p>Best regards,<br>The HomieHQ Team</p>
+    <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #0f172a; color: #e2e8f0; border-radius: 12px;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="font-size: 24px; font-weight: 800; color: #38bdf8;">property</span><span style="font-size: 24px; font-weight: 800; color: #ffffff;">Pal</span>
+      </div>
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #f1f5f9;">Verify your email</h2>
+      <p style="color: #94a3b8; margin-bottom: 24px;">Hi {user.first_name or 'there'}, click the button below to verify your email address. This link expires in 24 hours.</p>
+      <div style="text-align: center; margin-bottom: 24px;">
+        <a href="{verification_url}" style="display: inline-block; background: #38bdf8; color: #0f172a; font-weight: 700; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-size: 15px;">Verify Email</a>
+      </div>
+      <p style="color: #64748b; font-size: 13px;">If you didn't create a propertyPal account, you can safely ignore this email.</p>
+      <hr style="border: none; border-top: 1px solid #1e293b; margin: 24px 0;" />
+      <p style="color: #475569; font-size: 12px; text-align: center;">propertyPal · Part of the <a href="https://palstack.io" style="color: #38bdf8;">palStack</a> ecosystem</p>
+    </div>
     """
     
     send_email(subject, recipients, html_body)
