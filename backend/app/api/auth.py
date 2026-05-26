@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.settings import Settings
 from app import db
 from app.services.email_service import send_password_reset_email,send_welcome_email,send_verification_email
+import os
 import secrets
 from datetime import datetime, timedelta
 
@@ -40,9 +41,10 @@ def register():
     if existing_user:
         return jsonify({"error": "Email already registered"}), 409
 
-    # Check user count - only allow first user registration
+    # Check user count - block registration unless ALLOW_REGISTRATION is enabled
     existing_user_count = User.query.count()
-    if existing_user_count > 0:
+    allow_registration = os.environ.get('ALLOW_REGISTRATION', 'false').lower() == 'true'
+    if existing_user_count > 0 and not allow_registration:
         return jsonify({
             "error": "PropertyPal Core is a single-user application. Registration is closed.",
             "single_user_mode": True

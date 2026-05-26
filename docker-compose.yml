@@ -52,6 +52,8 @@ services:
       # Demo mode settings
       - DEMO_MODE=${DEMO_MODE:-false}
       - SKIP_EMAIL_VERIFICATION=${SKIP_EMAIL_VERIFICATION:-true}
+      # Set to true to allow additional user registrations beyond the first account
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-false}
     depends_on:
       db:
         condition: service_healthy
