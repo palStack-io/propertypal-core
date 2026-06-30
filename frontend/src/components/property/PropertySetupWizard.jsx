@@ -10,14 +10,16 @@ const PropertySetupWizard = ({ onComplete }) => {
     state: '',
     zip: '',
     property_type: 'single_family',
-    bedrooms: '',
-    bathrooms: '',
     square_footage: '',
     purchase_date: '',
     purchase_price: '',
     current_value: '',
     description: ''
   });
+  const [bedroomsOption, setBedroomsOption] = useState('any');
+  const [bedroomsCustom, setBedroomsCustom] = useState('');
+  const [bathroomsOption, setBathroomsOption] = useState('any');
+  const [bathroomsCustom, setBathroomsCustom] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -36,10 +38,12 @@ const PropertySetupWizard = ({ onComplete }) => {
 
     try {
       // Create the property
+      const bdVal = bedroomsOption === 'custom' ? bedroomsCustom : (bedroomsOption !== 'any' ? bedroomsOption : '');
+      const baVal = bathroomsOption === 'custom' ? bathroomsCustom : (bathroomsOption !== 'any' ? bathroomsOption : '');
       const propertyData = {
         ...formData,
-        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
-        bathrooms: formData.bathrooms ? parseFloat(formData.bathrooms) : null,
+        bedrooms: bdVal ? parseInt(bdVal) : null,
+        bathrooms: baVal ? parseFloat(baVal) : null,
         square_footage: formData.square_footage ? parseInt(formData.square_footage) : null,
         purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
         current_value: formData.current_value ? parseFloat(formData.current_value) : null
@@ -126,13 +130,37 @@ const PropertySetupWizard = ({ onComplete }) => {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label htmlFor="bedrooms" className="form-label">Bedrooms</label>
-                    <input type="number" name="bedrooms" id="bedrooms" min="0"
-                      value={formData.bedrooms} onChange={handleChange} className="form-input" />
+                    <select id="bedrooms" className="form-input" value={bedroomsOption} onChange={e => { setBedroomsOption(e.target.value); setBedroomsCustom(''); }}>
+                      <option value="any">Any</option>
+                      <option value="1">1+</option>
+                      <option value="2">2+</option>
+                      <option value="3">3+</option>
+                      <option value="4">4+</option>
+                      <option value="5">5+</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    {bedroomsOption === 'custom' && (
+                      <input type="number" className="form-input mt-2" min="0" placeholder="Enter number" value={bedroomsCustom} onChange={e => setBedroomsCustom(e.target.value)} />
+                    )}
                   </div>
                   <div>
                     <label htmlFor="bathrooms" className="form-label">Bathrooms</label>
-                    <input type="number" name="bathrooms" id="bathrooms" min="0" step="0.5"
-                      value={formData.bathrooms} onChange={handleChange} className="form-input" />
+                    <select id="bathrooms" className="form-input" value={bathroomsOption} onChange={e => { setBathroomsOption(e.target.value); setBathroomsCustom(''); }}>
+                      <option value="any">Any</option>
+                      <option value="1">1+</option>
+                      <option value="1.5">1.5+</option>
+                      <option value="2">2+</option>
+                      <option value="2.5">2.5+</option>
+                      <option value="3">3+</option>
+                      <option value="3.5">3.5+</option>
+                      <option value="4">4+</option>
+                      <option value="4.5">4.5+</option>
+                      <option value="5">5+</option>
+                      <option value="custom">Custom</option>
+                    </select>
+                    {bathroomsOption === 'custom' && (
+                      <input type="number" className="form-input mt-2" min="0" step="0.5" placeholder="Enter number" value={bathroomsCustom} onChange={e => setBathroomsCustom(e.target.value)} />
+                    )}
                   </div>
                   <div>
                     <label htmlFor="square_footage" className="form-label">Sq. Ft.</label>

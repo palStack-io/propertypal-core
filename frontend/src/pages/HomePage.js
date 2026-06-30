@@ -99,16 +99,16 @@ const HomePage = () => {
 
       {/* Nav bar */}
       <header style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg-sidebar)' }}>
-        <div className="container mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/propertyPal.png" alt="propertyPal" className="h-8 w-8" />
-            <span className="font-bold text-lg tracking-tight">
+        <div className="container mx-auto max-w-6xl px-3 py-3 flex flex-wrap items-center justify-between gap-3 sm:px-4 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <img src="/propertyPal.png" alt="propertyPal" className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+            <span className="truncate text-base font-bold tracking-tight sm:text-lg">
               <span className="property-text">property</span><span className="t-primary">Pal</span>
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link to="/login" className="btn-secondary px-4 py-2 rounded-md text-sm">Log in</Link>
-            <Link to="/signup" className="btn-primary px-4 py-2 rounded-md text-sm">Sign up free</Link>
+          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+            <Link to="/login" className="btn-secondary rounded-md px-3 py-2 text-sm whitespace-nowrap sm:px-4">Log in</Link>
+            <Link to="/signup" className="btn-primary rounded-md px-3 py-2 text-sm whitespace-nowrap sm:px-4">Sign up free</Link>
           </div>
         </div>
       </header>

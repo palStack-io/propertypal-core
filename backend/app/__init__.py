@@ -143,6 +143,7 @@ def create_app(config_class=Config):
     from app.api.settings import settings_bp
     from app.api.integrations import integrations_bp
     from app.api.modules import modules_bp
+    from app.api.contractors import contractors_bp
 
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(properties_bp, url_prefix='/api/properties')
@@ -157,6 +158,7 @@ def create_app(config_class=Config):
     app.register_blueprint(settings_bp, url_prefix='/api/settings')
     app.register_blueprint(integrations_bp, url_prefix='/api/integrations')
     app.register_blueprint(modules_bp, url_prefix='/api/modules')
+    app.register_blueprint(contractors_bp, url_prefix='/api/contractors')
 
     # Auto-seed demo accounts if DEMO_MODE is enabled
     with app.app_context():

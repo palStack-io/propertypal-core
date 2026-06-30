@@ -15,7 +15,16 @@ const Maintenance = () => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [activeTab, setActiveTab] = useState('items'); // 'items' or 'checklists'
+  const [activeTab, setActiveTab] = useState('items'); // 'items' | 'checklists' | 'contractors'
+
+  // Contractors state
+  const [contractors, setContractors] = useState([]);
+  const [contractorsLoading, setContractorsLoading] = useState(false);
+  const [showContractorForm, setShowContractorForm] = useState(false);
+  const [editingContractor, setEditingContractor] = useState(null);
+  const [contractorForm, setContractorForm] = useState({ name: '', company: '', phone: '', email: '', trade: '', rating: '', notes: '' });
+  const [contractorSaving, setContractorSaving] = useState(false);
+
   const [newItem, setNewItem] = useState({
     title: '',
     description: '',
@@ -220,6 +229,84 @@ const Maintenance = () => {
   });
 
   // Get priority badge color
+  // Contractor helpers
+  const fetchContractors = useCallback(async () => {
+    setContractorsLoading(true);
+    try {
+      const data = await apiHelpers.get('contractors/');
+      setContractors(data);
+    } catch {
+      setError('Failed to load contractors.');
+    } finally {
+      setContractorsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'contractors' && contractors.length === 0) fetchContractors();
+  }, [activeTab, contractors.length, fetchContractors]);
+
+  const openNewContractor = () => {
+    setContractorForm({ name: '', company: '', phone: '', email: '', trade: '', rating: '', notes: '' });
+    setEditingContractor(null);
+    setShowContractorForm(true);
+  };
+
+  const openEditContractor = (c) => {
+    setContractorForm({ name: c.name || '', company: c.company || '', phone: c.phone || '', email: c.email || '', trade: c.trade || '', rating: c.rating != null ? String(c.rating) : '', notes: c.notes || '' });
+    setEditingContractor(c);
+    setShowContractorForm(true);
+  };
+
+  const handleContractorSave = async (e) => {
+    e.preventDefault();
+    setContractorSaving(true);
+    try {
+      const payload = {
+        name: contractorForm.name.trim(),
+        company: contractorForm.company.trim(),
+        phone: contractorForm.phone.trim(),
+        email: contractorForm.email.trim(),
+        trade: contractorForm.trade.trim(),
+        rating: contractorForm.rating ? parseInt(contractorForm.rating) : null,
+        notes: contractorForm.notes.trim(),
+      };
+      if (editingContractor) {
+        await apiHelpers.put(`contractors/${editingContractor.id}`, payload);
+        setMessage('Contractor updated.');
+      } else {
+        await apiHelpers.post('contractors/', payload);
+        setMessage('Contractor added.');
+      }
+      setShowContractorForm(false);
+      fetchContractors();
+    } catch {
+      setError('Failed to save contractor.');
+    } finally {
+      setContractorSaving(false);
+    }
+  };
+
+  const handleContractorDelete = async (id) => {
+    if (!window.confirm('Delete this contractor?')) return;
+    try {
+      await apiHelpers.delete(`contractors/${id}`);
+      setMessage('Contractor deleted.');
+      setContractors(prev => prev.filter(c => c.id !== id));
+    } catch {
+      setError('Failed to delete contractor.');
+    }
+  };
+
+  const renderStars = (rating) => {
+    if (!rating) return <span className="t-muted text-xs">No rating</span>;
+    return (
+      <span style={{ color: '#f59e0b', letterSpacing: 2 }}>
+        {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+      </span>
+    );
+  };
+
   const getPriorityBadge = (priority) => {
     switch (priority) {
       case 'high':
@@ -318,11 +405,118 @@ const Maintenance = () => {
             >
               Seasonal Checklists
             </button>
+            <button
+              className={`tab-btn${activeTab === 'contractors' ? ' active' : ''}`}
+              onClick={() => setActiveTab('contractors')}
+            >
+              Contractors
+            </button>
           </div>
         </div>
         
         {/* Only show selected tab content */}
-        {activeTab === 'items' ? (
+        {activeTab === 'contractors' ? (
+          <>
+            {/* Add button */}
+            <div className="flex justify-end mb-6">
+              <button className="btn-secondary px-4 py-2 rounded-md text-sm" onClick={openNewContractor}>
+                + Add Contractor
+              </button>
+            </div>
+
+            {/* Add / Edit form */}
+            {showContractorForm && (
+              <div className="card p-6 mb-6">
+                <h2 className="text-lg font-semibold mb-4">{editingContractor ? 'Edit Contractor' : 'New Contractor'}</h2>
+                <form onSubmit={handleContractorSave}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="form-label">Name *</label>
+                      <input className="form-input" required value={contractorForm.name} onChange={e => setContractorForm(f => ({ ...f, name: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="form-label">Company</label>
+                      <input className="form-input" value={contractorForm.company} onChange={e => setContractorForm(f => ({ ...f, company: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="form-label">Trade / Specialty</label>
+                      <input className="form-input" placeholder="e.g. Plumbing, Electrical, HVAC" value={contractorForm.trade} onChange={e => setContractorForm(f => ({ ...f, trade: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="form-label">Phone</label>
+                      <input className="form-input" type="tel" value={contractorForm.phone} onChange={e => setContractorForm(f => ({ ...f, phone: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="form-label">Email</label>
+                      <input className="form-input" type="email" value={contractorForm.email} onChange={e => setContractorForm(f => ({ ...f, email: e.target.value }))} />
+                    </div>
+                    <div>
+                      <label className="form-label">Rating (1–5)</label>
+                      <select className="form-input" value={contractorForm.rating} onChange={e => setContractorForm(f => ({ ...f, rating: e.target.value }))}>
+                        <option value="">No rating</option>
+                        {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} star{n > 1 ? 's' : ''}</option>)}
+                      </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="form-label">Notes</label>
+                      <textarea className="form-input" rows="3" placeholder="Experience, reliability, pricing notes…" value={contractorForm.notes} onChange={e => setContractorForm(f => ({ ...f, notes: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-6 gap-3">
+                    <button type="button" className="t-secondary px-4 py-2" onClick={() => setShowContractorForm(false)}>Cancel</button>
+                    <button type="submit" className="btn-secondary px-4 py-2 rounded-md" disabled={contractorSaving || !contractorForm.name.trim()}>
+                      {contractorSaving ? 'Saving…' : editingContractor ? 'Save Changes' : 'Add Contractor'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Contractor list */}
+            {contractorsLoading ? (
+              <div className="text-center py-12">
+                <svg className="animate-spin h-8 w-8 text-secondary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="mt-3 t-secondary">Loading contractors…</p>
+              </div>
+            ) : contractors.length === 0 ? (
+              <div className="text-center py-16 card">
+                <svg className="h-16 w-16 t-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <h3 className="text-lg font-medium mb-2">No contractors yet</h3>
+                <p className="t-secondary mb-6">Add contractors to track who does what and how well they perform.</p>
+                <button className="btn-secondary px-4 py-2 rounded-md" onClick={openNewContractor}>Add Your First Contractor</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {contractors.map(c => (
+                  <div key={c.id} className="card p-6">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <h3 className="font-semibold text-base">{c.name}</h3>
+                        {c.company && <p className="t-secondary text-sm">{c.company}</p>}
+                      </div>
+                      {c.trade && <span className="badge badge-brand text-xs">{c.trade}</span>}
+                    </div>
+                    <div className="mb-3">{renderStars(c.rating)}</div>
+                    <div className="space-y-1 text-sm t-secondary mb-4">
+                      {c.phone && <p>📞 {c.phone}</p>}
+                      {c.email && <p>✉️ {c.email}</p>}
+                    </div>
+                    {c.notes && <p className="text-sm t-secondary italic border-t border-themed pt-3">{c.notes}</p>}
+                    <div className="flex justify-end gap-3 mt-4 pt-3 border-t border-themed">
+                      <button className="text-blue-400 hover:text-blue-300 text-sm" onClick={() => openEditContractor(c)}>Edit</button>
+                      <button className="text-red-500 hover:text-red-400 text-sm" onClick={() => handleContractorDelete(c.id)}>Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        ) : activeTab === 'items' ? (
           <>
             {/* Add Maintenance Form */}
             {showAddForm && (

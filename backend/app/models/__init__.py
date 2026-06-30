@@ -9,3 +9,4 @@ from app.models.appliance import Appliance
 from app.models.project import Project
 from app.models.finance import Expense, Budget
 from app.models.settings import Settings
+from app.models.contractor import Contractor
