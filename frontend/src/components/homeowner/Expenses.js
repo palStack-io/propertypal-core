@@ -218,6 +218,11 @@ const Expenses = () => {
       return;
     }
 
+    if (!currentProperty) {
+      setError('Still loading your property. Please try again in a moment.');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(''); // Clear any previous errors
@@ -252,7 +257,7 @@ const Expenses = () => {
       }
     } catch (err) {
       console.error('Error adding expense:', err);
-      setError('Failed to add expense. Please try again later.');
+      setError(err.response?.data?.error || 'Failed to add expense. Please try again later.');
       setLoading(false);
     }
   };
@@ -264,6 +269,11 @@ const Expenses = () => {
     // Validate form
     if (!newExpense.title || !newExpense.amount || !newExpense.category || !newExpense.date) {
       setError('Please fill in all required fields.');
+      return;
+    }
+
+    if (!currentProperty) {
+      setError('Still loading your property. Please try again in a moment.');
       return;
     }
 
@@ -302,7 +312,7 @@ const Expenses = () => {
       }
     } catch (err) {
       console.error('Error updating expense:', err);
-      setError('Failed to update expense. Please try again later.');
+      setError(err.response?.data?.error || 'Failed to update expense. Please try again later.');
       setLoading(false);
     }
   };
@@ -632,6 +642,7 @@ const Expenses = () => {
         {showAddForm && (
           <div className="card p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">Add New Expense</h2>
+            {error && <div className="alert-error mb-4">{error}</div>}
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
@@ -766,6 +777,7 @@ const Expenses = () => {
         {showEditForm && (
           <div className="card p-6 mb-8">
             <h2 className="text-xl font-semibold mb-4">Edit Expense</h2>
+            {error && <div className="alert-error mb-4">{error}</div>}
             <form onSubmit={handleUpdate}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
