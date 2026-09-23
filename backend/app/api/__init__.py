@@ -1,7 +1,7 @@
 # API package initialization
 # app/api/__init__.py
 """
-API package for PropertyPal/HomeOwnerPal application.
+API package for propertyPal Core.
 
 This package contains all the API routes for the application,
 organized into blueprints by feature domain.

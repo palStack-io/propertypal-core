@@ -2,9 +2,9 @@
 set -e
 
 # Database credentials from environment
-DB_USER=${POSTGRES_USER:-homiehq}
-DB_PASSWORD=${POSTGRES_PASSWORD:-homiehq}
-DB_NAME=${POSTGRES_DB:-homiehq}
+DB_USER=${POSTGRES_USER:-propertypal}
+DB_PASSWORD=${POSTGRES_PASSWORD:-propertypal}
+DB_NAME=${POSTGRES_DB:-propertypal}
 DB_HOST=${DATABASE_HOST:-db}
 DB_PORT=${DATABASE_PORT:-5432}
 

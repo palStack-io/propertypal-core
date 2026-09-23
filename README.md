@@ -1,10 +1,14 @@
 # propertyPal
 
+> [!WARNING]
+> **propertyPal Core and propertyPal Hosted have diverged.** We are in the process of syncing the UI changes back into Core, and more is coming.
+> In the meantime, you can see how the hosted version will look at the live demo: **[propertydemo.palstack.io](https://propertydemo.palstack.io)**
+
 ![propertyPal](propertyPal.png)
 
 **Your Complete Property Management Solution**
 
-[Try Demo →](https://propertypal.palstack.io) | [Documentation](https://propertypal.palstack.io/docs) | [More Tools](https://palstack.io)
+[Try Demo →](https://propertydemo.palstack.io) | [Documentation](https://propertypal.palstack.io/docs) | [More Tools](https://palstack.io)
 
 > Open source, privacy-first property management from palStack
 
@@ -39,7 +43,7 @@ We integrated with Home Assistant for smart automations. Get reminders when it's
 
 Here's the honest truth: none of us came from software engineering backgrounds. We're learning this stuff as we build it—backend design, microservices, mobile apps, Docker networking. Some days it's Flask patterns. Other days it's debugging why containers won't talk to each other at 2 AM.
 
-We use AI coding assistants heavily. Not to write the code for us, but to help us understand *why* things work the way they do. It's like having a patient teacher who doesn't judge when you ask the same question three different ways.
+**Yes, we use AI to build propertyPal.** We rely heavily on AI / LLM coding assistants to design, write, test and review code, and to help us understand *why* things work the way they do. Every change is still reviewed by a human before it ships. It's like having a patient teacher who doesn't judge when you ask the same question three different ways.
 
 Is propertyPal over-engineered for what it does? Probably. Does it work? Absolutely. Are we still figuring things out? Every single day.
 
@@ -61,8 +65,6 @@ We founded palStack to share these tools with anyone who wants them. propertyPal
 
 **In Active Development:**
 - **propertyPal** - You're here! Track home maintenance, warranties, documents
-- **carPal** - Vehicle maintenance tracking (coming soon)
-- **petPal** - Pet health and care management (coming soon)
 - **clubPal** - Group coordination for dining, activities, and social clubs
 
 Learn more at [palstack.io](https://palstack.io)
@@ -122,7 +124,6 @@ Don't want to manage servers? We're launching a managed hosting service where we
 | **Project Tracking** | Manage home improvement projects from start to finish |
 | **Photo Gallery** | Store property photos organized by date |
 | **Financial Reports** | Generate expense reports, budget summaries |
-| **Multi-Property Support** | Manage multiple properties from one account |
 | **Dark Mode** | Beautiful dark theme interface |
 
 ### For Home Assistant Fans
@@ -409,8 +410,6 @@ docker-compose up -d --build
 - [ ] Enhanced reporting with charts
 
 **Future:**
-- [ ] carPal integration (vehicle maintenance)
-- [ ] petPal integration (pet care tracking)
 - [ ] Cross-Pal data sharing
 - [ ] AI-powered maintenance predictions
 
@@ -512,7 +511,7 @@ We're not building engagement platforms or harvesting data. We solve real proble
 - **Your Data:** Zero telemetry, no tracking, privacy by design
 - **Open Source:** AGPL-3.0, free forever, improvements benefit everyone
 - **Human-Centered:** Plain English, accessible design, forgiving UX
-- **AI-Assisted:** LLM-agnostic (Claude, ChatGPT, Qwen), all code human-reviewed
+- **AI-Assisted:** Built with AI / LLM coding assistants, all code human-reviewed
 - **Dog-Fooded:** We use what we build daily
 
 **Two Paths:**
@@ -530,7 +529,7 @@ We're building sustainable tools that help people, not chasing unicorns. If we c
 - **Rachel Surette** - Co-Founder, Marketing & Branding
 - **Elle Russel Chopra** - Co-Founder, Lead UI/UX Designer
 - **Chaitanya Gunupudi** - Senior Advisor, Cybersecurity & DevOps
-- **AI Assistants** - LLM-agnostic: Claude, ChatGPT, Qwen (all code human-reviewed)
+- **AI Assistants** - AI / LLM coding assistants (all code human-reviewed)
 
 ---
 
