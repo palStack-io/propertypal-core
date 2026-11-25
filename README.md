@@ -5,7 +5,6 @@
 
   <p>
     <a href="#quick-start">Quick start</a> ·
-    <a href="https://propertydemo.palstack.io">Live demo</a> ·
     <a href="https://palstack.io/propertypal">Website</a> ·
     <a href="https://discord.gg/mcgcp7RdYs">Discord</a>
   </p>
@@ -23,9 +22,9 @@ and what the house costs you in one place, on your own server. Nothing is sent t
 This repository is **propertyPal Core**: open source and free to self-host.
 
 > [!NOTE]
-> **Core is behind the hosted edition.** The hosted propertyPal (shown in the [live demo](https://propertydemo.palstack.io))
-> has a newer design and features that have not been brought back to Core yet. The screenshots below are Core as it
-> runs from this repository today.
+> **Core is behind the hosted edition.** Hosted propertyPal has a newer design and features that have not been
+> brought back to Core yet, so it looks different from what this repository runs. The screenshots below are Core as
+> it runs from this repository today.
 
 <p align="center">
   <img src="docs/screenshots/maintenance.png" alt="Maintenance requests with priority and due dates" width="49%" />
@@ -108,6 +107,8 @@ The API is documented in [docs/API_INTEGRATION_GUIDE.md](docs/API_INTEGRATION_GU
 | Newer design and features from the hosted roadmap | Being brought back | Yes |
 | Phone app | No | In testing |
 | Where your data lives | Your server | palStack's servers |
+
+The [hosted demo](https://propertydemo.palstack.io) shows the hosted edition, not Core.
 
 ## Contributing
 
