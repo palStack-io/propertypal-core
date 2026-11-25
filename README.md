@@ -105,7 +105,7 @@ The API is documented in [docs/API_INTEGRATION_GUIDE.md](docs/API_INTEGRATION_GU
 | Maintenance, appliances, documents, projects, expenses, budget | Yes | Yes |
 | Home Assistant and API keys | Yes | Yes |
 | Newer design and features from the hosted roadmap | Being brought back | Yes |
-| Phone app | No | In testing |
+| Phone app (iOS and Android) | One-time purchase, from January 2027 | Included |
 | Where your data lives | Your server | palStack's servers |
 
 The [hosted demo](https://propertydemo.palstack.io) shows the hosted edition, not Core.
