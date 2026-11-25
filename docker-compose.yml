@@ -22,7 +22,6 @@ services:
 
   # Flask Backend
   backend:
-    image: palstack/propertypal_core:backend-latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -40,8 +39,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-propertypal}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-propertypal}
       - POSTGRES_DB=${POSTGRES_DB:-propertypal}
-      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set in .env (openssl rand -hex 32)}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set in .env (openssl rand -hex 32)}
       - MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME:-}
@@ -64,7 +63,6 @@ services:
 
   # React Frontend
   frontend:
-    image: palstack/propertypal_core:frontend-latest
     build:
       context: ./frontend
       dockerfile: Dockerfile
