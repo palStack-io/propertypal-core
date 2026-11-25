@@ -38,10 +38,36 @@ def auto_seed_demo():
     except Exception as e:
         print(f"Demo mode: Failed to seed accounts - {str(e)}")
 
+PLACEHOLDER_SECRETS = {
+    '', 'you-should-change-this-in-production', 'jwt-secret-key-change-in-production',
+    'change-me-in-production', 'changeme', 'secret',
+}
+
+
+def _refuse_placeholder_secrets(app):
+    """Stop a real install from signing sessions with a secret that is published in this repository."""
+    if app.config.get('TESTING'):
+        return
+    local_dev = app.config.get('DEBUG') and os.environ.get('IN_DOCKER', '0') in ('', '0')
+    if local_dev:
+        return
+    weak = [name for name in ('SECRET_KEY', 'JWT_SECRET_KEY')
+            if str(app.config.get(name) or '').strip().lower() in PLACEHOLDER_SECRETS
+            or str(app.config.get(name) or '').lower().startswith('change')
+            or len(str(app.config.get(name) or '')) < 32]
+    if weak:
+        raise RuntimeError(
+            f"{' and '.join(weak)} must be set to a long random value (openssl rand -hex 32). "
+            "propertyPal will not start with an empty, short or published placeholder secret, "
+            "because anyone could forge sign-in tokens with it. See README.md, Quick start."
+        )
+
+
 def create_app(config_class=Config):
     
     app = Flask(__name__)
     app.config.from_object(config_class)
+    _refuse_placeholder_secrets(app)
     
     # Explicitly check and set SQLALCHEMY_DATABASE_URI from environment
     if os.environ.get('SQLALCHEMY_DATABASE_URI'):
